@@ -75,8 +75,8 @@ export default function LoginPage() {
                 <div className="mt-6 text-center text-sm text-gray-400">
                     <p className="mb-2">Don't have an account? <a href="/register" className="text-amber-500 hover:text-amber-400 font-medium">Register here</a></p>
                     <p>Demo Accounts:</p>
-                    <p>Student: daniel@dojo.com (password123)</p>
-                    <p>Sensei: sensei@dojo.com (password123)</p>
+                    <p>Student: daniel@dojo.com (student)</p>
+                    <p>Sensei: sensei@dojo.com (sensei)</p>
                 </div>
             </div>
         </div>
