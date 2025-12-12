@@ -60,6 +60,7 @@ async function main() {
             email: 'sensei@dojo.com',
             role: 'sensei',
             currentBeltId: 'rokudan',
+            password: 'sensei', // Default password
         },
         {
             id: 'student1',
@@ -72,6 +73,7 @@ async function main() {
             senseiNotes: 'Shows great promise. Needs to work on stance.',
             address: '123 Dojo Way, Karate City, KC 12345',
             signedContract: 'daniel_larusso_contract.pdf',
+            password: 'student',
         },
         {
             id: 'student2',
@@ -82,6 +84,7 @@ async function main() {
             startDate: new Date('2024-12-01'),
             contractRenewal: 'yearly',
             senseiNotes: 'Needs to work on discipline.',
+            password: 'student',
         }
     ]
 
