@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { fetchBeltsAction, fetchVideosByBeltAction, fetchEventsAction, fetchUserAttendanceStatsAction } from '@/app/actions';
+import { fetchBeltsAction, fetchVideosByBeltAction, fetchEventsAction, fetchUserAttendanceStatsAction, markAttendanceAction, checkTodayAttendanceAction } from '@/app/actions';
 import { Belt, Video, DojoEvent } from '@/types';
 import ProgressBar from '@/components/ProgressBar';
 import VideoCard from '@/components/VideoCard';
@@ -20,19 +20,23 @@ export default function StudentDashboard() {
     const [events, setEvents] = useState<DojoEvent[]>([]);
     const [videos, setVideos] = useState<VideoWithBelt[]>([]);
     const [attendanceCount, setAttendanceCount] = useState(0);
+    const [isCheckedIn, setIsCheckedIn] = useState(false);
+    const [isCheckingIn, setIsCheckingIn] = useState(false);
 
     const loadData = useCallback(async () => {
         if (!user) return;
 
-        const [loadedBelts, loadedEvents, stats] = await Promise.all([
+        const [loadedBelts, loadedEvents, stats, checkedInStatus] = await Promise.all([
             fetchBeltsAction(),
             fetchEventsAction(),
-            fetchUserAttendanceStatsAction(user.id)
+            fetchUserAttendanceStatsAction(user.id),
+            checkTodayAttendanceAction(user.id)
         ]);
 
         setAllBelts(loadedBelts);
         setEvents(loadedEvents.map(e => ({ ...e, date: e.date.toISOString() })));
         setAttendanceCount(stats.total);
+        setIsCheckedIn(checkedInStatus);
 
         const userBelt = loadedBelts.find(b => b.id === user.currentBeltId);
         setCurrentBelt(userBelt);
@@ -57,6 +61,27 @@ export default function StudentDashboard() {
         }
     }, [user, isLoading, router, loadData]);
 
+    const handleCheckIn = async () => {
+        if (!user) return;
+        setIsCheckingIn(true);
+        try {
+            const result = await markAttendanceAction(user.id);
+            if (result.success) {
+                setIsCheckedIn(true);
+                setAttendanceCount(prev => prev + 1);
+            } else {
+                console.log(result.message);
+                if (result.message?.includes('already checked in')) {
+                    setIsCheckedIn(true);
+                }
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsCheckingIn(false);
+        }
+    };
+
     if (isLoading || !user || !currentBelt) {
         return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>;
     }
@@ -66,10 +91,30 @@ export default function StudentDashboard() {
             <header className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-yellow-500">Welcome, {user.name}</h1>
-                    <div className="flex items-center gap-4 mt-1">
+                    <div className="flex flex-wrap items-center gap-4 mt-2">
                         <p className="text-gray-400">Current Rank: <span className="text-white font-semibold">{currentBelt.name} Belt</span></p>
-                        <span className="text-gray-600">|</span>
+                        <span className="hidden md:inline text-gray-600">|</span>
                         <p className="text-gray-400">Classes Attended: <span className="text-green-400 font-bold">{attendanceCount}</span></p>
+
+                        {/* Check In Button */}
+                        <div className="ml-2">
+                            {isCheckedIn ? (
+                                <span className="inline-flex items-center gap-1 bg-green-500/10 text-green-400 px-3 py-1.5 rounded-full text-sm font-semibold border border-green-500/20">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                    Checked In Today
+                                </span>
+                            ) : (
+                                <button
+                                    onClick={handleCheckIn}
+                                    disabled={isCheckingIn}
+                                    className="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-500 text-gray-900 rounded-full text-sm font-bold hover:bg-amber-400 transition-colors disabled:opacity-50 shadow-lg shadow-amber-500/20"
+                                >
+                                    {isCheckingIn ? '...' : 'Check In to Class'}
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
                 <button

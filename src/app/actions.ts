@@ -2,6 +2,7 @@
 
 import { PrismaClient } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
+import { auth } from '@/auth'
 
 const prisma = new PrismaClient()
 
@@ -137,6 +138,19 @@ export async function fetchVideosByBeltAction(beltId: string) {
 // --- Attendance Actions ---
 
 export async function markAttendanceAction(userId: string, notes?: string) {
+    const session = await auth();
+    if (!session || !session.user) {
+        return { success: false, message: 'Unauthorized' };
+    }
+
+    // Security: Only Sensei OR the user themselves can mark attendance
+    if (session.user.role !== 'sensei' && session.user.id !== userId) {
+        // If checking by email failure (id mismatch), fallback check?
+        // Actually, session.user.id comes from token.sub. 
+        // Let's assume ID match is safer.
+        return { success: false, message: 'Unauthorized: Cannot check in for others.' };
+    }
+
     // Check if already checked in today
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
@@ -161,12 +175,39 @@ export async function markAttendanceAction(userId: string, notes?: string) {
     await prisma.attendance.create({
         data: {
             userId,
-            notes
+            notes: notes || (session.user.role === 'student' ? 'Self Check-in' : undefined)
         }
     });
 
     revalidatePath('/sensei');
+    revalidatePath('/student');
     return { success: true };
+}
+
+export async function checkTodayAttendanceAction(userId: string) {
+    const session = await auth();
+    if (!session || !session.user) return false;
+
+    // Only allow checking own attendance or if sensei
+    if (session.user.role !== 'sensei' && session.user.id !== userId) {
+        return false;
+    }
+
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const count = await prisma.attendance.count({
+        where: {
+            userId,
+            date: {
+                gte: startOfDay,
+                lte: endOfDay
+            }
+        }
+    });
+    return count > 0;
 }
 
 export async function fetchUserAttendanceStatsAction(userId: string) {
