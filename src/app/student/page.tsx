@@ -1,12 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { getBelts, getUserById, getVideosByBelt, getEvents } from '@/lib/data';
+import { fetchBeltsAction, fetchVideosByBeltAction, fetchEventsAction, fetchUserAttendanceStatsAction } from '@/app/actions';
 import { Belt, Video, DojoEvent } from '@/types';
 import ProgressBar from '@/components/ProgressBar';
 import VideoCard from '@/components/VideoCard';
+
+interface VideoWithBelt extends Video {
+    beltOrder: number;
+}
 
 export default function StudentDashboard() {
     const { user, isLoading, logout } = useAuth();
@@ -14,19 +18,44 @@ export default function StudentDashboard() {
     const [currentBelt, setCurrentBelt] = useState<Belt | undefined>(undefined);
     const [allBelts, setAllBelts] = useState<Belt[]>([]);
     const [events, setEvents] = useState<DojoEvent[]>([]);
+    const [videos, setVideos] = useState<VideoWithBelt[]>([]);
+    const [attendanceCount, setAttendanceCount] = useState(0);
+
+    const loadData = useCallback(async () => {
+        if (!user) return;
+
+        const [loadedBelts, loadedEvents, stats] = await Promise.all([
+            fetchBeltsAction(),
+            fetchEventsAction(),
+            fetchUserAttendanceStatsAction(user.id)
+        ]);
+
+        setAllBelts(loadedBelts);
+        setEvents(loadedEvents.map(e => ({ ...e, date: e.date.toISOString() })));
+        setAttendanceCount(stats.total);
+
+        const userBelt = loadedBelts.find(b => b.id === user.currentBeltId);
+        setCurrentBelt(userBelt);
+
+        // Load all videos (inefficient but simple for now)
+        const allVideos: VideoWithBelt[] = [];
+        for (const belt of loadedBelts) {
+            const beltVideos = await fetchVideosByBeltAction(belt.id);
+            allVideos.push(...beltVideos.map(v => ({ ...v, beltOrder: belt.order })));
+        }
+        setVideos(allVideos);
+
+    }, [user]);
 
     useEffect(() => {
-        if (!isLoading && (!user || user.role !== 'student')) {
-            router.push('/login');
-        } else if (user) {
-            const belts = getBelts();
-            setAllBelts(belts);
-            const userBelt = belts.find(b => b.id === user.currentBeltId);
-            setCurrentBelt(userBelt);
-
-            setEvents(getEvents());
+        if (!isLoading) {
+            if (!user || user.role !== 'student') {
+                router.push('/login');
+            } else {
+                loadData();
+            }
         }
-    }, [user, isLoading, router]);
+    }, [user, isLoading, router, loadData]);
 
     if (isLoading || !user || !currentBelt) {
         return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>;
@@ -34,10 +63,14 @@ export default function StudentDashboard() {
 
     return (
         <div className="min-h-screen bg-gray-900 text-white p-4 md:p-8">
-            <header className="flex justify-between items-center mb-8">
+            <header className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-yellow-500">Welcome, {user.name}</h1>
-                    <p className="text-gray-400">Current Rank: <span className="text-white font-semibold">{currentBelt.name} Belt</span></p>
+                    <div className="flex items-center gap-4 mt-1">
+                        <p className="text-gray-400">Current Rank: <span className="text-white font-semibold">{currentBelt.name} Belt</span></p>
+                        <span className="text-gray-600">|</span>
+                        <p className="text-gray-400">Classes Attended: <span className="text-green-400 font-bold">{attendanceCount}</span></p>
+                    </div>
                 </div>
                 <button
                     onClick={logout}
@@ -59,19 +92,15 @@ export default function StudentDashboard() {
                     <section>
                         <h2 className="text-xl font-semibold mb-6">Training Videos</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {allBelts.map((belt) => {
-                                const beltVideos = getVideosByBelt(belt.id);
-                                if (beltVideos.length === 0) return null;
-
-                                const isLocked = belt.order > currentBelt.order;
-
-                                return beltVideos.map((video) => (
+                            {videos.map((video) => {
+                                const isLocked = video.beltOrder > currentBelt.order;
+                                return (
                                     <VideoCard
                                         key={video.id}
                                         video={video}
                                         locked={isLocked}
                                     />
-                                ));
+                                );
                             })}
                         </div>
                     </section>

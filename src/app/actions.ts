@@ -133,3 +133,59 @@ export async function fetchVideosByBeltAction(beltId: string) {
         where: { beltId }
     })
 }
+
+// --- Attendance Actions ---
+
+export async function markAttendanceAction(userId: string, notes?: string) {
+    // Check if already checked in today
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const existing = await prisma.attendance.findFirst({
+        where: {
+            userId,
+            date: {
+                gte: startOfDay,
+                lte: endOfDay
+            }
+        }
+    });
+
+    if (existing) {
+        return { success: false, message: 'Student already checked in today.' };
+    }
+
+    await prisma.attendance.create({
+        data: {
+            userId,
+            notes
+        }
+    });
+
+    revalidatePath('/sensei');
+    return { success: true };
+}
+
+export async function fetchUserAttendanceStatsAction(userId: string) {
+    const total = await prisma.attendance.count({
+        where: { userId }
+    });
+    return { total };
+}
+
+export async function fetchRecentAttendanceAction() {
+    // Get check-ins from the last 24 hours (or just today)
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    return await prisma.attendance.findMany({
+        where: {
+            date: { gte: startOfDay }
+        },
+        include: { user: true },
+        orderBy: { date: 'desc' }
+    });
+}

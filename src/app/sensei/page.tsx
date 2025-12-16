@@ -16,6 +16,7 @@ import {
     deleteBeltAction
 } from '@/app/actions';
 import { User, Belt, ContractType, DojoEvent } from '@/types';
+import AttendanceCheckIn from '@/components/AttendanceCheckIn';
 
 export default function SenseiDashboard() {
     const { user, isLoading, logout } = useAuth();
@@ -280,6 +281,11 @@ export default function SenseiDashboard() {
                     </button>
                 </div>
             </header>
+
+            {/* Attendance Check In */}
+            <section className="mb-8">
+                <AttendanceCheckIn students={students} />
+            </section>
 
             {/* Renewal Alert Section */}
             {upcomingRenewals.length > 0 && (

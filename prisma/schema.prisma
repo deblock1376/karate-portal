@@ -29,6 +29,7 @@ model User {
   signedContract  String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  attendance      Attendance[]
 }
 
 model Account {
@@ -87,4 +88,12 @@ model Event {
   title       String
   date        DateTime
   description String
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  date      DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes     String?
 }
