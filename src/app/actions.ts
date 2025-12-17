@@ -144,10 +144,10 @@ export async function markAttendanceAction(userId: string, notes?: string) {
     }
 
     // Security: Only Sensei OR the user themselves can mark attendance
-    if (session.user.role !== 'sensei' && session.user.id !== userId) {
-        // If checking by email failure (id mismatch), fallback check?
-        // Actually, session.user.id comes from token.sub. 
-        // Let's assume ID match is safer.
+    const userRole = (session.user as any).role;
+    const userIdFromSession = (session.user as any).id;
+
+    if (userRole !== 'sensei' && userIdFromSession !== userId) {
         return { success: false, message: 'Unauthorized: Cannot check in for others.' };
     }
 

@@ -90,7 +90,7 @@ export default function StudentDashboard() {
         <div className="min-h-screen bg-gray-900 text-white p-4 md:p-8">
             <header className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-yellow-500">Welcome, {user.name}</h1>
+                    <h1 className="text-3xl font-bold text-yellow-500">Welcome, {user.name} <span className="text-xs text-gray-600">(v2.0)</span></h1>
                     <div className="flex flex-wrap items-center gap-4 mt-2">
                         <p className="text-gray-400">Current Rank: <span className="text-white font-semibold">{currentBelt.name} Belt</span></p>
                         <span className="hidden md:inline text-gray-600">|</span>
