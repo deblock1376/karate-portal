@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { fetchBeltsAction, fetchVideosByBeltAction, fetchEventsAction, fetchUserAttendanceStatsAction, markAttendanceAction, checkTodayAttendanceAction } from '@/app/actions';
+import { fetchBeltsAction, fetchVideosByBeltAction, fetchEventsAction, fetchUserAttendanceStatsAction, markAttendanceAction, checkTodayAttendanceAction, fetchStudentClassesAction } from '@/app/actions';
 import { Belt, Video, DojoEvent } from '@/types';
 import ProgressBar from '@/components/ProgressBar';
 import VideoCard from '@/components/VideoCard';
@@ -22,21 +22,24 @@ export default function StudentDashboard() {
     const [attendanceCount, setAttendanceCount] = useState(0);
     const [isCheckedIn, setIsCheckedIn] = useState(false);
     const [isCheckingIn, setIsCheckingIn] = useState(false);
+    const [myClasses, setMyClasses] = useState<any[]>([]);
 
     const loadData = useCallback(async () => {
         if (!user) return;
 
-        const [loadedBelts, loadedEvents, stats, checkedInStatus] = await Promise.all([
+        const [loadedBelts, loadedEvents, stats, checkedInStatus, loadedClasses] = await Promise.all([
             fetchBeltsAction(),
             fetchEventsAction(),
             fetchUserAttendanceStatsAction(user.id),
-            checkTodayAttendanceAction(user.id)
+            checkTodayAttendanceAction(user.id),
+            fetchStudentClassesAction(user.id)
         ]);
 
         setAllBelts(loadedBelts);
         setEvents(loadedEvents.map(e => ({ ...e, date: e.date.toISOString() })));
         setAttendanceCount(stats.total);
         setIsCheckedIn(checkedInStatus);
+        setMyClasses(loadedClasses);
 
         const userBelt = loadedBelts.find(b => b.id === user.currentBeltId);
         setCurrentBelt(userBelt);
@@ -151,7 +154,33 @@ export default function StudentDashboard() {
                     </section>
                 </div>
 
-                <div className="lg:col-span-1">
+                <div className="lg:col-span-1 space-y-8">
+                    <section>
+                        <h2 className="text-xl font-semibold mb-6">My Class Schedule</h2>
+                        <div className="space-y-4">
+                            {myClasses.length === 0 && (
+                                <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 text-center text-gray-500">
+                                    No assigned classes.
+                                </div>
+                            )}
+                            {myClasses.map((cls) => (
+                                <div key={cls.id} className="bg-gray-800 p-4 rounded-lg border border-gray-700 shadow-md flex justify-between items-center group hover:border-blue-500 transition-colors">
+                                    <div>
+                                        <h3 className="font-bold text-white group-hover:text-blue-400 transition-colors">{cls.name}</h3>
+                                        <div className="text-sm text-gray-400 mt-1 flex items-center gap-2">
+                                            <span>{cls.day}s</span>
+                                            <span className="w-1 h-1 rounded-full bg-gray-500"></span>
+                                            <span>{cls.time}</span>
+                                        </div>
+                                    </div>
+                                    <div className="text-xs font-mono bg-gray-700 px-2 py-1 rounded text-gray-300">
+                                        {cls.duration} min
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
                     <section>
                         <h2 className="text-xl font-semibold mb-6">Upcoming Events</h2>
                         <div className="space-y-4">

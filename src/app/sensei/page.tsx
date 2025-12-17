@@ -13,10 +13,12 @@ import {
     addEventAction,
     deleteEventAction,
     addBeltAction,
-    deleteBeltAction
+    deleteBeltAction,
+    fetchClassesAction
 } from '@/app/actions';
 import { User, Belt, ContractType, DojoEvent } from '@/types';
 import AttendanceCheckIn from '@/components/AttendanceCheckIn';
+import ClassManager from '@/components/ClassManager';
 
 export default function SenseiDashboard() {
     const { user, isLoading, logout } = useAuth();
@@ -24,6 +26,7 @@ export default function SenseiDashboard() {
     const [students, setStudents] = useState<User[]>([]);
     const [belts, setBelts] = useState<Belt[]>([]);
     const [events, setEvents] = useState<DojoEvent[]>([]);
+    const [classes, setClasses] = useState<any[]>([]); // Use any for now or define Class type
 
     // Search & Filter State
     const [searchQuery, setSearchQuery] = useState('');
@@ -38,6 +41,7 @@ export default function SenseiDashboard() {
     const [notes, setNotes] = useState('');
     const [address, setAddress] = useState('');
     const [contractFile, setContractFile] = useState<string>('');
+    const [selectedClassIds, setSelectedClassIds] = useState<string[]>([]);
 
     // Event Form State
     const [eventTitle, setEventTitle] = useState('');
@@ -53,13 +57,15 @@ export default function SenseiDashboard() {
     const [showForm, setShowForm] = useState(false);
     const [showEventForm, setShowEventForm] = useState(false);
     const [showBeltForm, setShowBeltForm] = useState(false);
+    const [showClassManager, setShowClassManager] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
 
     const loadData = useCallback(async () => {
-        const [loadedStudents, loadedBelts, loadedEvents] = await Promise.all([
+        const [loadedStudents, loadedBelts, loadedEvents, loadedClasses] = await Promise.all([
             fetchAllUsersAction(searchQuery, filterBelt),
             fetchBeltsAction(),
-            fetchEventsAction()
+            fetchEventsAction(),
+            fetchClassesAction()
         ]);
 
         // Map Prisma users to App users (fix types)
@@ -75,11 +81,13 @@ export default function SenseiDashboard() {
             senseiNotes: s.senseiNotes || undefined,
             address: s.address || undefined,
             signedContract: s.signedContract || undefined,
+            classes: (s as any).classes // Map classes relation if exists
         }));
 
         setStudents(mappedStudents);
         setBelts(loadedBelts);
         setEvents(loadedEvents.map(e => ({ ...e, date: e.date.toISOString() })));
+        setClasses(loadedClasses);
         if (loadedBelts.length > 0) setBeltOrder(loadedBelts.length);
     }, [searchQuery, filterBelt]);
 
@@ -107,6 +115,7 @@ export default function SenseiDashboard() {
         setNotes('');
         setAddress('');
         setContractFile('');
+        setSelectedClassIds([]);
         setEditingId(null);
         setShowForm(false);
     };
@@ -120,10 +129,16 @@ export default function SenseiDashboard() {
         setNotes(student.senseiNotes || '');
         setAddress(student.address || '');
         setContractFile(student.signedContract || '');
+
+        // Populate selected classes
+        const studentClasses = (student as any).classes || [];
+        setSelectedClassIds(studentClasses.map((c: any) => c.id));
+
         setEditingId(student.id);
         setShowForm(true);
         setShowEventForm(false);
         setShowBeltForm(false);
+        setShowClassManager(false);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -137,7 +152,8 @@ export default function SenseiDashboard() {
                 contractRenewal: contract,
                 senseiNotes: notes,
                 address: address,
-                signedContract: contractFile
+                signedContract: contractFile,
+                classIds: selectedClassIds
             };
 
             if (editingId) {
@@ -242,7 +258,20 @@ export default function SenseiDashboard() {
                 <div className="flex flex-wrap gap-4">
                     <button
                         onClick={() => {
+                            setShowClassManager(!showClassManager);
+                            setShowBeltForm(false);
+                            setShowEventForm(false);
+                            setShowForm(false);
+                            loadData(); // Re-fetch classes
+                        }}
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-sm font-medium transition-colors"
+                    >
+                        {showClassManager ? 'Hide Schedule' : 'Manage Schedule'}
+                    </button>
+                    <button
+                        onClick={() => {
                             setShowBeltForm(!showBeltForm);
+                            setShowClassManager(false);
                             setShowEventForm(false);
                             setShowForm(false);
                         }}
@@ -254,6 +283,7 @@ export default function SenseiDashboard() {
                         onClick={() => {
                             setShowEventForm(!showEventForm);
                             setShowBeltForm(false);
+                            setShowClassManager(false);
                             setShowForm(false);
                         }}
                         className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded text-sm font-medium transition-colors"
@@ -267,6 +297,7 @@ export default function SenseiDashboard() {
                                 setShowForm(true);
                                 setShowEventForm(false);
                                 setShowBeltForm(false);
+                                setShowClassManager(false);
                             }
                         }}
                         className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded text-sm font-medium transition-colors"
@@ -281,6 +312,13 @@ export default function SenseiDashboard() {
                     </button>
                 </div>
             </header>
+
+            {/* Class Manager Section */}
+            {showClassManager && (
+                <section className="mb-8">
+                    <ClassManager classes={classes} />
+                </section>
+            )}
 
             {/* Attendance Check In */}
             <section className="mb-8">
@@ -572,6 +610,30 @@ export default function SenseiDashboard() {
                                             {contractFile}
                                         </span>
                                     )}
+                                </div>
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-300 mb-2">Assign to Classes</label>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-48 overflow-y-auto bg-gray-700 p-3 rounded-lg border border-gray-600">
+                                    {classes.length === 0 && <p className="text-gray-400 text-sm italic">No classes available.</p>}
+                                    {classes.map((cls: any) => (
+                                        <label key={cls.id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-600/50 p-1 rounded">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedClassIds.includes(cls.id)}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        setSelectedClassIds([...selectedClassIds, cls.id]);
+                                                    } else {
+                                                        setSelectedClassIds(selectedClassIds.filter(id => id !== cls.id));
+                                                    }
+                                                }}
+                                                className="rounded border-gray-500 text-blue-600 focus:ring-blue-500 bg-gray-600"
+                                            />
+                                            <span className="text-sm text-gray-200">{cls.name} ({cls.day} {cls.time})</span>
+                                        </label>
+                                    ))}
                                 </div>
                             </div>
                         </div>

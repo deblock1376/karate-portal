@@ -35,30 +35,46 @@ export async function fetchAllUsersAction(search?: string, beltId?: string) {
         where.currentBeltId = beltId
     }
 
-    return await prisma.user.findMany({ where })
+    return await prisma.user.findMany({
+        where,
+        include: {
+            classes: true
+        }
+    })
 }
 
 export async function addUserAction(data: any) {
+    const { classIds, ...userData } = data;
+
     const formattedData = {
-        ...data,
-        startDate: data.startDate ? new Date(data.startDate) : undefined,
-        contractStartDate: data.contractStartDate ? new Date(data.contractStartDate) : undefined,
+        ...userData,
+        startDate: userData.startDate ? new Date(userData.startDate) : undefined,
+        contractStartDate: userData.contractStartDate ? new Date(userData.contractStartDate) : undefined,
         role: 'student',
         currentBeltId: '11th-kyu', // Default
-        password: data.password || undefined, // Store password if provided
+        password: userData.password || undefined, // Store password if provided
+        classes: classIds ? {
+            connect: classIds.map((id: string) => ({ id }))
+        } : undefined
     }
     const user = await prisma.user.create({
         data: formattedData
     })
     revalidatePath('/sensei')
+    revalidatePath('/student') // Revalidate student dashboard too as they might check schedule
     return user
 }
 
 export async function updateUserAction(id: string, data: any) {
+    const { classIds, ...userData } = data;
+
     const formattedData = {
-        ...data,
-        startDate: data.startDate ? new Date(data.startDate) : undefined,
-        contractStartDate: data.contractStartDate ? new Date(data.contractStartDate) : undefined,
+        ...userData,
+        startDate: userData.startDate ? new Date(userData.startDate) : undefined,
+        contractStartDate: userData.contractStartDate ? new Date(userData.contractStartDate) : undefined,
+        classes: classIds ? {
+            set: classIds.map((cid: string) => ({ id: cid }))
+        } : undefined
     }
     const user = await prisma.user.update({
         where: { id },
@@ -228,5 +244,92 @@ export async function fetchRecentAttendanceAction() {
         },
         include: { user: true },
         orderBy: { date: 'desc' }
+    });
+}
+
+// --- Class Actions ---
+
+export async function fetchClassesAction() {
+    return await prisma.class.findMany({
+        orderBy: [
+            { day: 'asc' }, // Needs custom sort for days if string, but simple for now
+            { time: 'asc' }
+        ],
+        include: {
+            students: {
+                select: { id: true, name: true, email: true }
+            }
+        }
+    });
+}
+
+export async function createClassAction(name: string, day: string, time: string, duration: number = 60) {
+    const session = await auth();
+    if (session?.user?.role !== 'sensei') {
+        throw new Error('Unauthorized');
+    }
+
+    await prisma.class.create({
+        data: { name, day, time, duration }
+    });
+    revalidatePath('/sensei');
+}
+
+export async function deleteClassAction(id: string) {
+    const session = await auth();
+    if (session?.user?.role !== 'sensei') {
+        throw new Error('Unauthorized');
+    }
+
+    await prisma.class.delete({ where: { id } });
+    revalidatePath('/sensei');
+}
+
+export async function assignStudentToClassAction(classId: string, studentId: string) {
+    const session = await auth();
+    if (session?.user?.role !== 'sensei') {
+        throw new Error('Unauthorized');
+    }
+
+    await prisma.class.update({
+        where: { id: classId },
+        data: {
+            students: {
+                connect: { id: studentId }
+            }
+        }
+    });
+    revalidatePath('/sensei');
+}
+
+export async function removeStudentFromClassAction(classId: string, studentId: string) {
+    const session = await auth();
+    if (session?.user?.role !== 'sensei') {
+        throw new Error('Unauthorized');
+    }
+
+    await prisma.class.update({
+        where: { id: classId },
+        data: {
+            students: {
+                disconnect: { id: studentId }
+            }
+        }
+    });
+    revalidatePath('/sensei');
+}
+
+export async function fetchStudentClassesAction(studentId: string) {
+    // Return classes for a specific student
+    return await prisma.class.findMany({
+        where: {
+            students: {
+                some: { id: studentId }
+            }
+        },
+        orderBy: [
+            { day: 'asc' },
+            { time: 'asc' }
+        ]
     });
 }
