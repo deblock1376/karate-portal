@@ -3,6 +3,7 @@
 import { PrismaClient } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
 import { auth } from '@/auth'
+import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
@@ -52,7 +53,7 @@ export async function addUserAction(data: any) {
         contractStartDate: userData.contractStartDate ? new Date(userData.contractStartDate) : undefined,
         role: 'student',
         currentBeltId: '11th-kyu', // Default
-        password: userData.password || undefined, // Store password if provided
+        password: userData.password ? await bcrypt.hash(userData.password, 10) : undefined,
         classes: classIds ? {
             connect: classIds.map((id: string) => ({ id }))
         } : undefined
@@ -72,6 +73,7 @@ export async function updateUserAction(id: string, data: any) {
         ...userData,
         startDate: userData.startDate ? new Date(userData.startDate) : undefined,
         contractStartDate: userData.contractStartDate ? new Date(userData.contractStartDate) : undefined,
+        password: userData.password ? await bcrypt.hash(userData.password, 10) : undefined,
         classes: classIds ? {
             set: classIds.map((cid: string) => ({ id: cid }))
         } : undefined
