@@ -16,11 +16,9 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         Credentials({
             async authorize(credentials) {
                 if (!credentials?.email || !credentials?.password) {
-                    console.log('[Auth] Missing email or password in credentials');
                     return null;
                 }
                 const { email, password } = credentials;
-                console.log('[Auth] Attempting login for:', email);
 
                 const normalizedEmail = (email as string).toLowerCase().trim();
                 const user = await prisma.user.findUnique({
@@ -28,11 +26,8 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                 });
 
                 if (!user) {
-                    console.log('[Auth] User not found:', normalizedEmail);
                     return null;
                 }
-
-                console.log('[Auth] User found, checking password for:', normalizedEmail);
 
                 if (user.password) {
                     let passwordsMatch = false;
@@ -40,22 +35,18 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                     if (user.password.startsWith('$2')) {
                         try {
                             passwordsMatch = await bcrypt.compare(password as string, user.password);
-                            console.log('[Auth] Bcrypt comparison result:', passwordsMatch);
                         } catch (e) {
                             console.error('[Auth] Bcrypt comparison failed:', e);
                         }
                     }
 
                     if (!passwordsMatch) {
-                        const plainMatch = user.password === password;
-                        console.log('[Auth] Plain text fallback comparison result:', plainMatch);
-                        if (!plainMatch) {
+                        if (user.password !== password) {
                             return null;
                         }
                     }
                 }
 
-                console.log('[Auth] Login successful for:', normalizedEmail);
                 return user;
             },
         }),

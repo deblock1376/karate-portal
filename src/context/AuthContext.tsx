@@ -33,10 +33,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             // Check if session is actually established
             if (status === 'authenticated' && session?.user?.email) {
-                console.log('[AuthContext] Authenticated! email:', session.user.email);
                 try {
                     const foundUser = await loginUserAction(session.user.email);
-                    console.log('[AuthContext] foundUser result:', !!foundUser);
                     if (foundUser) {
                         setUser({
                             ...foundUser,
@@ -56,7 +54,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     console.error("Failed to load user data", e);
                 }
             } else if (status === 'unauthenticated') {
-                console.log('[AuthContext] Unauthenticated status');
                 setUser(null);
             }
 
