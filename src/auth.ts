@@ -38,19 +38,22 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                 // OR checks the password if it exists.
 
                 if (user.password) {
-                    // Wait, if I migrate everyone, I only need bcrypt.compare.
-                    // But if I want to support "auto-migrate" I could check plain text.
-                    // Let's stick to the plan: Migrate manually, so here we expect hash.
-                    // HOWEVER, for dev speed, I will support plain text fallback temporarily if needed, 
-                    // but `bcrypt.compare` on a plain text string that isn't a hash usually returns false.
+                    let passwordsMatch = false;
 
-                    const passwordsMatch = await bcrypt.compare(password as string, user.password);
+                    // Simple check if it's a bcrypt hash (starts with $2)
+                    if (user.password.startsWith('$2')) {
+                        try {
+                            passwordsMatch = await bcrypt.compare(password as string, user.password);
+                        } catch (e) {
+                            console.error('Bcrypt comparison failed:', e);
+                        }
+                    }
+
                     if (!passwordsMatch) {
                         // Fallback check for plain text (temporary during migration phase)
                         if (user.password !== password) {
                             return null;
                         }
-                        // If plain text matched, we should technically re-hash it, but we'll do that via migration script for simplicity.
                     }
                 }
 
