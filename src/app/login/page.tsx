@@ -1,13 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const { login } = useAuth();
+    const { login, user } = useAuth();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (user) {
+            const role = (user.role || '').toLowerCase();
+            if (role === 'sensei') {
+                router.push('/sensei');
+            } else if (role === 'student') {
+                router.push('/student');
+            } else {
+                // Should not happen for valid users, but handle gracefully
+                setError('Login failed: Unknown user role (' + user.role + ')');
+                // Optional: logout to clear invalid state
+            }
+        }
+    }, [user, router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -15,24 +32,8 @@ export default function LoginPage() {
         const success = await login(email, password);
         if (!success) {
             setError('Invalid email or password.');
-        } else {
-            // Let the AuthContext (or session effect) handle data loading, 
-            // but we must redirect. However, role based redirect is better.
-            // Ideally AuthContext should handle it or we fetch role here?
-            // Since login calls signIn, and session updates, the 'role' is in the session.
-            // But we need to wait for session.
-            // Simple fix: Reload page or simple redirect to root which then redirects?
-            // Or better: Let's assume redirection logic.
-            // Actually, `login` in AuthContext doesn't return the user role.
-            // Let's force a redirect.
-            window.location.href = '/sensei'; // Temporary dumb redirect, middleware will protect if wrong role?
-            // Actually, let's verify role. 
-            // But simpler: just redirect to root '/' and let middleware/page logic handle it?
-            // Or better: Modify AuthContext to return role?
-            // For now, let's just Refresh which usually triggers the AuthContext useEffect -> User set.
-            // But we are on /login. 
-            // If I am logged in, middleware might redirect me out of /login? No, middleware only protects /sensei.
         }
+        // If success, the AuthContext will update 'user', triggering the useEffect above.
     };
 
     return (

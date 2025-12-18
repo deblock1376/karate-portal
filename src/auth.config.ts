@@ -20,13 +20,15 @@ export const authConfig = {
             return true;
         },
         async session({ session, token }: any) {
+            console.log('[Session Callback]', { tokenSub: token?.sub, tokenRole: token?.role });
             if (token && session.user) {
                 session.user.id = token.sub;
                 session.user.role = token.role;
             }
             return session;
         },
-        async jwt({ token, user }: any) {
+        async jwt({ token, user, trigger }: any) {
+            console.log('[JWT Callback]', { trigger, hasUser: !!user, tokenSub: token?.sub });
             if (user) {
                 token.role = user.role;
             }

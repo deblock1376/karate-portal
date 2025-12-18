@@ -24,33 +24,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         const loadUserData = async () => {
-            if (session?.user?.email) {
-                const email = session.user.email;
-                if (email) {
-                    try {
-                        const foundUser = await loginUserAction(email);
-                        if (foundUser) {
-                            setUser({
-                                ...foundUser,
-                                name: foundUser.name || '',
-                                email: foundUser.email || '',
-                                role: foundUser.role as any,
-                                startDate: foundUser.startDate?.toISOString(),
-                                contractStartDate: foundUser.contractStartDate?.toISOString(),
-                                contractRenewal: (foundUser.contractRenewal as any) || undefined,
-                                senseiNotes: foundUser.senseiNotes || undefined,
-                                address: foundUser.address || undefined,
-                                signedContract: foundUser.signedContract || undefined,
-                                password: foundUser.password || undefined,
-                            });
-                        }
-                    } catch (e) {
-                        console.error("Failed to load user data", e);
+            // Simply allow the user state to potentially be derived from session if we want,
+            // or fetch additional data ONLY if needed and safe. 
+            // With the new session callback populating user.id and user.role, 
+            // we might not need to fetch the full user object immediately if we trust the session.
+            // However, to keep existing functionality (fetching full profile), we'll keep the fetch 
+            // but ensure we don't cause a loop. 
+
+            // Check if session is actually established
+            if (status === 'authenticated' && session?.user?.email) {
+                // ... logic remains but relies on STABLE session status
+                try {
+                    const foundUser = await loginUserAction(session.user.email);
+                    if (foundUser) {
+                        setUser({
+                            ...foundUser,
+                            name: foundUser.name || '',
+                            email: foundUser.email || '',
+                            role: foundUser.role as any,
+                            startDate: foundUser.startDate?.toISOString(),
+                            contractStartDate: foundUser.contractStartDate?.toISOString(),
+                            contractRenewal: (foundUser.contractRenewal as any) || undefined,
+                            senseiNotes: foundUser.senseiNotes || undefined,
+                            address: foundUser.address || undefined,
+                            signedContract: foundUser.signedContract || undefined,
+                            password: foundUser.password || undefined,
+                        });
                     }
+                } catch (e) {
+                    console.error("Failed to load user data", e);
                 }
-            } else {
+            } else if (status === 'unauthenticated') {
                 setUser(null);
             }
+
             if (status !== 'loading') {
                 setIsLoading(false);
             }
@@ -72,11 +79,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 return false;
             }
 
+            // Wait a beat for cookie to propagate before refreshing to ensure middleware picks it up
+            await new Promise(resolve => setTimeout(resolve, 100));
+
             router.refresh();
             return true;
         } catch (e) {
             console.error("Login exception", e);
-            return false;
+            throw e;
         }
     };
 
