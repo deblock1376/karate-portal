@@ -15,10 +15,14 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     providers: [
         Credentials({
             async authorize(credentials) {
+                if (!credentials?.email || !credentials?.password) {
+                    console.log('[Auth] Missing email or password in credentials');
+                    return null;
+                }
                 const { email, password } = credentials;
                 console.log('[Auth] Attempting login for:', email);
 
-                const normalizedEmail = (email as string).toLowerCase();
+                const normalizedEmail = (email as string).toLowerCase().trim();
                 const user = await prisma.user.findUnique({
                     where: { email: normalizedEmail }
                 });

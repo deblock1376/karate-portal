@@ -71,12 +71,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const login = async (email: string, password?: string) => {
         try {
             console.log('[AuthContext] Calling signIn for:', email);
-            await signIn('credentials', {
-                redirect: true,
-                callbackUrl: '/login',
+            const result = await signIn('credentials', {
+                redirect: false,
                 email,
                 password
             });
+
+            console.log('[AuthContext] signIn result:', result);
+
+            if (result?.error) {
+                console.error("Login failed:", result.error);
+                return false;
+            }
+
+            console.log('[AuthContext] Login success, refreshing router...');
+            router.refresh();
             return true;
         } catch (e) {
             console.error("Login exception", e);
