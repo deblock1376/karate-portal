@@ -12,18 +12,6 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     adapter: PrismaAdapter(prisma),
     session: { strategy: 'jwt' },
     trustHost: true,
-    cookies: {
-        sessionToken: {
-            name: `next-auth.session-token`,
-            options: {
-                httpOnly: true,
-                sameSite: 'lax',
-                path: '/',
-                secure: false, // TEMPORARILY DISABLED FOR MOBILE TESTING
-                domain: process.env.COOKIE_DOMAIN,
-            },
-        },
-    },
     providers: [
         Credentials({
             async authorize(credentials) {

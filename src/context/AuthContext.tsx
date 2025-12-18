@@ -79,9 +79,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 return false;
             }
 
-            // Wait a beat for cookie to propagate before refreshing to ensure middleware picks it up
-            await new Promise(resolve => setTimeout(resolve, 100));
-
             router.refresh();
             return true;
         } catch (e) {
