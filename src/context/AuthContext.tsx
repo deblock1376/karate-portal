@@ -33,9 +33,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             // Check if session is actually established
             if (status === 'authenticated' && session?.user?.email) {
-                // ... logic remains but relies on STABLE session status
+                console.log('[AuthContext] Authenticated! email:', session.user.email);
                 try {
                     const foundUser = await loginUserAction(session.user.email);
+                    console.log('[AuthContext] foundUser result:', !!foundUser);
                     if (foundUser) {
                         setUser({
                             ...foundUser,
@@ -55,6 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     console.error("Failed to load user data", e);
                 }
             } else if (status === 'unauthenticated') {
+                console.log('[AuthContext] Unauthenticated status');
                 setUser(null);
             }
 
@@ -68,17 +70,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const login = async (email: string, password?: string) => {
         try {
+            console.log('[AuthContext] Calling signIn for:', email);
             const result = await signIn('credentials', {
                 redirect: false,
                 email,
                 password
             });
 
+            console.log('[AuthContext] signIn result:', result?.error || 'SUCCESS');
+
             if (result?.error) {
                 console.error("Login failed", result.error);
                 return false;
             }
 
+            console.log('[AuthContext] Refreshing router...');
             router.refresh();
             return true;
         } catch (e) {

@@ -29,7 +29,9 @@ export default function LoginPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        console.log('[Login Page] Submitting credentials for:', email);
         const success = await login(email, password);
+        console.log('[Login Page] Login result:', success);
         if (!success) {
             setError('Invalid email or password.');
         }
