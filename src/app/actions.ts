@@ -10,8 +10,9 @@ const prisma = new PrismaClient()
 // --- User Actions ---
 
 export async function loginUserAction(email: string) {
+    const normalizedEmail = email.toLowerCase();
     const user = await prisma.user.findUnique({
-        where: { email },
+        where: { email: normalizedEmail },
     })
     if (!user) return null
     // In a real app, check password here. For now, returning user.
