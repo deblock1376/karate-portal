@@ -316,7 +316,7 @@ export default function SenseiDashboard() {
             {/* Class Manager Section */}
             {showClassManager && (
                 <section className="mb-8">
-                    <ClassManager classes={classes} />
+                    <ClassManager classes={classes} allStudents={students} />
                 </section>
             )}
 
