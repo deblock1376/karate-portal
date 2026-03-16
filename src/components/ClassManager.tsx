@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { createClassAction, deleteClassAction, markAttendanceAction, assignStudentToClassAction, removeStudentFromClassAction } from '@/app/actions';
+import { createClassAction, deleteClassAction, markAttendanceAction, assignStudentToClassAction, removeStudentFromClassAction, updateClassAction } from '@/app/actions';
 import { User } from '@/types';
+import Link from 'next/link';
 
 interface ClassData {
     id: string;
     name: string;
-    day: string;
+    days: string[];
     time: string;
     duration: number;
     students: any[];
@@ -16,21 +17,48 @@ interface ClassData {
 interface ClassManagerProps {
     classes: ClassData[];
     allStudents: User[];
+    onRefresh?: () => void;
 }
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-export default function ClassManager({ classes, allStudents }: ClassManagerProps) {
+export default function ClassManager({ classes, allStudents, onRefresh }: ClassManagerProps) {
     const [name, setName] = useState('');
-    const [day, setDay] = useState(DAYS[0]);
+    const [selectedDays, setSelectedDays] = useState<string[]>([]);
     const [time, setTime] = useState('18:00');
+    const [endTime, setEndTime] = useState('19:00');
     const [duration, setDuration] = useState(60);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [editingClassId, setEditingClassId] = useState<string | null>(null);
     const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
     const [attendanceLoading, setAttendanceLoading] = useState<Record<string, boolean>>({});
     const [checkedInState, setCheckedInState] = useState<Record<string, boolean>>({});
     const [showManageStudents, setShowManageStudents] = useState(false);
     const [searchRoster, setSearchRoster] = useState('');
+
+    const handleEdit = (cls: ClassData) => {
+        setEditingClassId(cls.id);
+        setName(cls.name);
+        setSelectedDays(cls.days || []);
+        setTime(cls.time);
+
+        // Calculate end time
+        const [h, m] = cls.time.split(':').map(Number);
+        const end = new Date();
+        end.setHours(h, m + cls.duration);
+        setEndTime(end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
+
+        // Ensure the class being edited is selected/visible
+        setSelectedClassId(cls.id);
+    };
+
+    const cancelEdit = () => {
+        setEditingClassId(null);
+        setName('');
+        setSelectedDays([]);
+        setTime('18:00');
+        setEndTime('19:00');
+    };
 
     const handleAssign = async (cid: string, sid: string) => {
         try {
@@ -48,17 +76,32 @@ export default function ClassManager({ classes, allStudents }: ClassManagerProps
         }
     };
 
-    const handleCreate = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await createClassAction(name, day, time, duration);
+            // Calculate duration from start and end time
+            const startParts = time.split(':').map(Number);
+            const endParts = endTime.split(':').map(Number);
+
+            let dur = (endParts[0] * 60 + endParts[1]) - (startParts[0] * 60 + startParts[1]);
+            if (dur <= 0) dur += 24 * 60; // Handle overnight classes if any
+
+            if (editingClassId) {
+                await updateClassAction(editingClassId, { name, days: selectedDays, time, duration: dur });
+            } else {
+                await createClassAction(name, selectedDays, time, dur);
+            }
+
             setName('');
-            setDay(DAYS[0]);
+            setSelectedDays([]);
             setTime('18:00');
+            setEndTime('19:00');
+            setEditingClassId(null);
+            if (onRefresh) onRefresh();
         } catch (error) {
             console.error(error);
-            alert('Failed to create class');
+            alert(`Failed to ${editingClassId ? 'update' : 'create'} class`);
         } finally {
             setIsSubmitting(false);
         }
@@ -68,6 +111,7 @@ export default function ClassManager({ classes, allStudents }: ClassManagerProps
         if (!confirm('Are you sure? This will remove all student assignments to this class.')) return;
         try {
             await deleteClassAction(id);
+            if (onRefresh) onRefresh();
         } catch (error) {
             alert('Failed to delete class');
         }
@@ -91,7 +135,7 @@ export default function ClassManager({ classes, allStudents }: ClassManagerProps
 
     const selectedClass = classes.find(c => c.id === selectedClassId);
 
-    const filteredStudents = allStudents.filter(s => 
+    const filteredStudents = allStudents.filter(s =>
         s.name.toLowerCase().includes(searchRoster.toLowerCase()) ||
         s.email.toLowerCase().includes(searchRoster.toLowerCase())
     );
@@ -102,8 +146,8 @@ export default function ClassManager({ classes, allStudents }: ClassManagerProps
                 <span>🗓️</span> Class Schedule
             </h2>
 
-            {/* Create Form */}
-            <form onSubmit={handleCreate} className="mb-8 grid grid-cols-1 md:grid-cols-5 gap-4 items-end bg-gray-700/50 p-4 rounded-lg">
+            {/* Create/Edit Form */}
+            <form onSubmit={handleSubmit} className={`mb-8 grid grid-cols-1 md:grid-cols-6 gap-4 items-end p-4 rounded-lg transition-colors ${editingClassId ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-gray-700/50'}`}>
                 <div className="md:col-span-2">
                     <label className="block text-xs uppercase text-gray-400 font-bold mb-1">Class Name</label>
                     <input
@@ -115,18 +159,32 @@ export default function ClassManager({ classes, allStudents }: ClassManagerProps
                         required
                     />
                 </div>
-                <div>
-                    <label className="block text-xs uppercase text-gray-400 font-bold mb-1">Day</label>
-                    <select
-                        value={day}
-                        onChange={e => setDay(e.target.value)}
-                        className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                    >
-                        {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
-                    </select>
+                <div className="md:col-span-2">
+                    <label className="block text-xs uppercase text-gray-400 font-bold mb-2">Days</label>
+                    <div className="flex flex-wrap gap-2">
+                        {DAYS.map(d => (
+                            <button
+                                key={d}
+                                type="button"
+                                onClick={() => {
+                                    if (selectedDays.includes(d)) {
+                                        setSelectedDays(selectedDays.filter(day => day !== d));
+                                    } else {
+                                        setSelectedDays([...selectedDays, d]);
+                                    }
+                                }}
+                                className={`px-2 py-1 rounded text-[10px] font-bold transition-all border ${selectedDays.includes(d)
+                                    ? 'bg-blue-600 border-blue-500 text-white'
+                                    : 'bg-gray-800 border-gray-700 text-gray-500 hover:border-gray-600'
+                                    }`}
+                            >
+                                {d.substring(0, 3)}
+                            </button>
+                        ))}
+                    </div>
                 </div>
                 <div>
-                    <label className="block text-xs uppercase text-gray-400 font-bold mb-1">Time</label>
+                    <label className="block text-xs uppercase text-gray-400 font-bold mb-1">Start</label>
                     <input
                         type="time"
                         value={time}
@@ -135,13 +193,35 @@ export default function ClassManager({ classes, allStudents }: ClassManagerProps
                         required
                     />
                 </div>
-                <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded transition-all disabled:opacity-50 active:scale-95"
-                >
-                    {isSubmitting ? '...' : 'Add Class'}
-                </button>
+                <div>
+                    <label className="block text-xs uppercase text-gray-400 font-bold mb-1">End</label>
+                    <input
+                        type="time"
+                        value={endTime}
+                        onChange={e => setEndTime(e.target.value)}
+                        className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                        required
+                    />
+                </div>
+                <div className="flex gap-2">
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className={`flex-1 font-bold py-2 px-4 rounded transition-all disabled:opacity-50 active:scale-95 ${editingClassId ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-blue-600 hover:bg-blue-500 text-white'}`}
+                    >
+                        {isSubmitting ? '...' : editingClassId ? 'Update' : 'Add'}
+                    </button>
+                    {editingClassId && (
+                        <button
+                            type="button"
+                            onClick={cancelEdit}
+                            className="px-3 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded transition-all"
+                            title="Cancel Edit"
+                        >
+                            ✕
+                        </button>
+                    )}
+                </div>
             </form>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -150,13 +230,12 @@ export default function ClassManager({ classes, allStudents }: ClassManagerProps
                     {classes.length === 0 && <p className="text-gray-500 text-center py-4">No classes scheduled yet.</p>}
 
                     {classes.map(cls => (
-                        <div 
-                            key={cls.id} 
-                            className={`flex flex-col md:flex-row md:items-center justify-between p-4 rounded-lg border transition-all cursor-pointer ${
-                                selectedClassId === cls.id 
-                                ? 'bg-blue-600/10 border-blue-500/50 ring-1 ring-blue-500/50' 
+                        <div
+                            key={cls.id}
+                            className={`flex flex-col md:flex-row md:items-center justify-between p-4 rounded-lg border transition-all cursor-pointer ${selectedClassId === cls.id
+                                ? 'bg-blue-600/10 border-blue-500/50 ring-1 ring-blue-500/50'
                                 : 'bg-gray-700 border-gray-600 hover:border-gray-500 group'
-                            }`}
+                                }`}
                             onClick={() => {
                                 setSelectedClassId(cls.id === selectedClassId ? null : cls.id);
                                 setShowManageStudents(false);
@@ -172,11 +251,16 @@ export default function ClassManager({ classes, allStudents }: ClassManagerProps
                                 <div className="text-sm text-gray-400 flex items-center gap-4">
                                     <span className="flex items-center gap-1">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                        {cls.day}
+                                        {cls.days?.length > 3 ? `${cls.days.length} Days` : cls.days?.map(d => d.substring(0, 3)).join(', ')}
                                     </span>
                                     <span className="flex items-center gap-1">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                        {cls.time}
+                                        {cls.time} - {(() => {
+                                            const [h, m] = cls.time.split(':').map(Number);
+                                            const end = new Date();
+                                            end.setHours(h, m + cls.duration);
+                                            return end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                                        })()}
                                     </span>
                                 </div>
                             </div>
@@ -186,14 +270,32 @@ export default function ClassManager({ classes, allStudents }: ClassManagerProps
                                         setSelectedClassId(cls.id === selectedClassId ? null : cls.id);
                                         setShowManageStudents(false);
                                     }}
-                                    className={`px-3 py-1.5 rounded text-xs font-bold transition-all ${
-                                        selectedClassId === cls.id ? 'bg-blue-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                                    }`}
+                                    className={`px-3 py-1.5 rounded text-xs font-bold transition-all ${selectedClassId === cls.id ? 'bg-blue-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                                        }`}
                                 >
                                     {selectedClassId === cls.id ? 'Close Roster' : 'View Roster'}
                                 </button>
+                                <Link
+                                    href={`/sensei/classes/${cls.id}`}
+                                    className="px-3 py-1.5 rounded text-xs font-bold bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-all"
+                                >
+                                    Full Details
+                                </Link>
                                 <button
-                                    onClick={() => handleDelete(cls.id)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleEdit(cls);
+                                    }}
+                                    className="text-gray-400 hover:text-blue-400 transition-colors p-2"
+                                    title="Edit Class"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDelete(cls.id);
+                                    }}
                                     className="text-gray-400 hover:text-red-400 transition-colors p-2"
                                     title="Delete Class"
                                 >
@@ -211,13 +313,19 @@ export default function ClassManager({ classes, allStudents }: ClassManagerProps
                             <div className="flex items-center justify-between mb-4">
                                 <div>
                                     <h3 className="text-lg font-bold text-white">Roster: {selectedClass.name}</h3>
-                                    <p className="text-xs text-blue-400 font-medium">{selectedClass.day}s at {selectedClass.time}</p>
+                                    <p className="text-xs text-blue-400 font-medium">
+                                        {selectedClass.days?.join(', ')} at {selectedClass.time} - {(() => {
+                                            const [h, m] = selectedClass.time.split(':').map(Number);
+                                            const end = new Date();
+                                            end.setHours(h, m + selectedClass.duration);
+                                            return end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                                        })()}
+                                    </p>
                                 </div>
-                                <button 
+                                <button
                                     onClick={() => setShowManageStudents(!showManageStudents)}
-                                    className={`px-3 py-1 rounded text-[10px] font-bold uppercase transition-all ${
-                                        showManageStudents ? 'bg-yellow-600 text-white' : 'bg-gray-700 text-gray-400 hover:text-white'
-                                    }`}
+                                    className={`px-3 py-1 rounded text-[10px] font-bold uppercase transition-all ${showManageStudents ? 'bg-yellow-600 text-white' : 'bg-gray-700 text-gray-400 hover:text-white'
+                                        }`}
                                 >
                                     {showManageStudents ? 'Back to Attendance' : 'Manage Students'}
                                 </button>
@@ -226,7 +334,7 @@ export default function ClassManager({ classes, allStudents }: ClassManagerProps
                             {showManageStudents ? (
                                 <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
                                     <div className="relative">
-                                        <input 
+                                        <input
                                             type="text"
                                             placeholder="Search students to add..."
                                             value={searchRoster}
@@ -246,7 +354,7 @@ export default function ClassManager({ classes, allStudents }: ClassManagerProps
                                                         <p className="text-[10px] text-gray-500">{student.email}</p>
                                                     </div>
                                                     {isInClass ? (
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleUnassign(selectedClass.id, student.id)}
                                                             className="text-red-400 hover:text-red-300 p-1 transition-colors"
                                                             title="Remove from class"
@@ -254,7 +362,7 @@ export default function ClassManager({ classes, allStudents }: ClassManagerProps
                                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                                         </button>
                                                     ) : (
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleAssign(selectedClass.id, student.id)}
                                                             className="text-green-400 hover:text-green-300 p-1 transition-colors"
                                                             title="Add to class"
@@ -292,7 +400,7 @@ export default function ClassManager({ classes, allStudents }: ClassManagerProps
                                                             <p className="text-[10px] text-gray-500">{student.email}</p>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     {checkedInState[student.id] ? (
                                                         <div className="flex items-center gap-1.5 text-green-400 font-bold text-[10px] uppercase bg-green-400/10 px-2 py-1 rounded">
                                                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>

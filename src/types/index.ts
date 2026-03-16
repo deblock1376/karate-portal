@@ -15,13 +15,18 @@ export interface User {
   email: string;
   role: Role;
   currentBeltId: string;
-  startDate?: string; // ISO date string YYYY-MM-DD
-  contractStartDate?: string; // ISO date string YYYY-MM-DD
-  contractRenewal?: ContractType;
-  senseiNotes?: string;
-  address?: string;
-  signedContract?: string; // Filename or URL
+  startDate?: Date | null;
+  contractStartDate?: Date | null;
+  contractRenewal?: ContractType | null;
+  senseiNotes?: string | null;
+  address?: string | null;
+  signedContract?: string | null;
+  stripes?: number | null;
+  nextTestDate?: Date | null;
+  isSwatTeam?: boolean;
   password?: string; // For mock auth
+  students?: User[];
+  guardians?: User[];
 }
 
 export interface Video {
@@ -34,6 +39,6 @@ export interface Video {
 export interface DojoEvent {
   id: string;
   title: string;
-  date: string; // ISO date string YYYY-MM-DD
+  date: Date | null;
   description: string;
 }

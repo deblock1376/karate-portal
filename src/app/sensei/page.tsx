@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { convertToCSV, downloadCSV } from '@/lib/exportUtils';
 import {
     fetchAllUsersAction,
     fetchBeltsAction,
@@ -19,6 +21,7 @@ import {
 import { User, Belt, ContractType, DojoEvent } from '@/types';
 import AttendanceCheckIn from '@/components/AttendanceCheckIn';
 import ClassManager from '@/components/ClassManager';
+import CalendarView from '@/components/CalendarView'; // Assuming CalendarView is a separate component
 
 export default function SenseiDashboard() {
     const { user, isLoading, logout } = useAuth();
@@ -42,6 +45,9 @@ export default function SenseiDashboard() {
     const [address, setAddress] = useState('');
     const [contractFile, setContractFile] = useState<string>('');
     const [selectedClassIds, setSelectedClassIds] = useState<string[]>([]);
+    const [stripes, setStripes] = useState(0);
+    const [nextTestDate, setNextTestDate] = useState('');
+    const [isSwatTeam, setIsSwatTeam] = useState(false);
 
     // Event Form State
     const [eventTitle, setEventTitle] = useState('');
@@ -75,18 +81,18 @@ export default function SenseiDashboard() {
             email: s.email || '',
             role: s.role as any,
             password: s.password || undefined,
-            startDate: s.startDate?.toISOString(),
-            contractStartDate: s.contractStartDate?.toISOString(),
             contractRenewal: (s.contractRenewal as any) || undefined,
-            senseiNotes: s.senseiNotes || undefined,
-            address: s.address || undefined,
-            signedContract: s.signedContract || undefined,
+            senseiNotes: s.senseiNotes || null,
+            address: s.address || null,
+            signedContract: s.signedContract || null,
+            stripes: (s as any).stripes,
+            isSwatTeam: (s as any).isSwatTeam,
             classes: (s as any).classes // Map classes relation if exists
         }));
 
         setStudents(mappedStudents);
         setBelts(loadedBelts);
-        setEvents(loadedEvents.map(e => ({ ...e, date: e.date.toISOString() })));
+        setEvents(loadedEvents as DojoEvent[]);
         setClasses(loadedClasses);
         if (loadedBelts.length > 0) setBeltOrder(loadedBelts.length);
     }, [searchQuery, filterBelt]);
@@ -117,18 +123,24 @@ export default function SenseiDashboard() {
         setContractFile('');
         setSelectedClassIds([]);
         setEditingId(null);
+        setStripes(0);
+        setNextTestDate('');
+        setIsSwatTeam(false);
         setShowForm(false);
     };
 
     const handleEditClick = (student: User) => {
         setStudentName(student.name);
         setStudentEmail(student.email);
-        setStartDate(student.startDate ? student.startDate.split('T')[0] : '');
-        setContractStartDate(student.contractStartDate ? student.contractStartDate.split('T')[0] : '');
+        setStartDate(student.startDate ? new Date(student.startDate).toISOString().split('T')[0] : '');
+        setContractStartDate(student.contractStartDate ? new Date(student.contractStartDate).toISOString().split('T')[0] : '');
         setContract(student.contractRenewal || 'monthly');
         setNotes(student.senseiNotes || '');
         setAddress(student.address || '');
         setContractFile(student.signedContract || '');
+        setStripes(student.stripes || 0);
+        setNextTestDate(student.nextTestDate ? new Date(student.nextTestDate).toISOString().split('T')[0] : '');
+        setIsSwatTeam(student.isSwatTeam || false);
 
         // Populate selected classes
         const studentClasses = (student as any).classes || [];
@@ -153,6 +165,9 @@ export default function SenseiDashboard() {
                 senseiNotes: notes,
                 address: address,
                 signedContract: contractFile,
+                stripes: stripes,
+                nextTestDate: nextTestDate || undefined,
+                isSwatTeam: isSwatTeam,
                 classIds: selectedClassIds
             };
 
@@ -208,7 +223,7 @@ export default function SenseiDashboard() {
         }
     };
 
-    const calculateRenewalDate = (startDate: string, contractType: ContractType) => {
+    const calculateRenewalDate = (startDate: Date, contractType: ContractType) => {
         const date = new Date(startDate);
         switch (contractType) {
             case 'monthly':
@@ -256,18 +271,30 @@ export default function SenseiDashboard() {
                     <p className="text-gray-400">Manage your dojo</p>
                 </div>
                 <div className="flex flex-wrap gap-4">
-                    <button
-                        onClick={() => {
-                            setShowClassManager(!showClassManager);
-                            setShowBeltForm(false);
-                            setShowEventForm(false);
-                            setShowForm(false);
-                            loadData(); // Re-fetch classes
-                        }}
-                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-sm font-medium transition-colors"
+                    <Link
+                        href="/sensei/classes"
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-sm font-medium transition-colors flex items-center gap-2"
                     >
-                        {showClassManager ? 'Hide Schedule' : 'Manage Schedule'}
-                    </button>
+                        <span>🗓️</span> Manage Classes
+                    </Link>
+                    <Link
+                        href="/sensei/students"
+                        className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded text-sm font-medium transition-colors flex items-center gap-2"
+                    >
+                        <span>👥</span> Student Roster
+                    </Link>
+                    <Link
+                        href="/sensei/analytics"
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-sm font-medium transition-colors flex items-center gap-2"
+                    >
+                        <span>📊</span> Analytics
+                    </Link>
+                    <Link
+                        href="/sensei/videos"
+                        className="px-4 py-2 bg-pink-600 hover:bg-pink-700 rounded text-sm font-medium transition-colors flex items-center gap-2"
+                    >
+                        <span>🎥</span> Manage Videos
+                    </Link>
                     <button
                         onClick={() => {
                             setShowBeltForm(!showBeltForm);
@@ -316,7 +343,8 @@ export default function SenseiDashboard() {
             {/* Class Manager Section */}
             {showClassManager && (
                 <section className="mb-8">
-                    <ClassManager classes={classes} allStudents={students} />
+                    <h2 className="text-xl font-semibold mb-6">Class Management</h2>
+                    <ClassManager classes={classes} allStudents={students} onRefresh={loadData} />
                 </section>
             )}
 
@@ -584,6 +612,27 @@ export default function SenseiDashboard() {
                                     placeholder="123 Dojo Way, Karate City"
                                 />
                             </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-1">Stripes (0-4)</label>
+                                <select
+                                    value={stripes}
+                                    onChange={(e) => setStripes(parseInt(e.target.value))}
+                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                >
+                                    {[0, 1, 2, 3, 4].map(s => (
+                                        <option key={s} value={s}>{s} Stripes</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-1">Next Belt Test Date</label>
+                                <input
+                                    type="date"
+                                    value={nextTestDate}
+                                    onChange={(e) => setNextTestDate(e.target.value)}
+                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                />
+                            </div>
                             <div className="md:col-span-2">
                                 <label className="block text-sm font-medium text-gray-300 mb-1">Signed Contract</label>
                                 <div className="flex items-center gap-4">
@@ -631,7 +680,7 @@ export default function SenseiDashboard() {
                                                 }}
                                                 className="rounded border-gray-500 text-blue-600 focus:ring-blue-500 bg-gray-600"
                                             />
-                                            <span className="text-sm text-gray-200">{cls.name} ({cls.day} {cls.time})</span>
+                                            <span className="text-sm text-gray-200">{cls.name} ({cls.days?.join(', ')} {cls.time})</span>
                                         </label>
                                     ))}
                                 </div>
@@ -660,7 +709,24 @@ export default function SenseiDashboard() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <section className="lg:col-span-2">
-                    <h2 className="text-xl font-semibold mb-6">Student Roster</h2>
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-xl font-semibold">Student Roster</h2>
+                        <button
+                            onClick={() => {
+                                const csv = convertToCSV(students, {
+                                    name: 'Name',
+                                    email: 'Email',
+                                    beltName: 'Belt',
+                                    contractRenewal: 'Renewal Type'
+                                });
+                                downloadCSV(csv, 'dojo-roster.csv');
+                            }}
+                            className="text-xs font-bold uppercase tracking-widest bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white px-3 py-1.5 rounded transition-all flex items-center gap-2"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                            Export CSV
+                        </button>
+                    </div>
                     <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg">
                         <table className="w-full text-left">
                             <thead className="bg-gray-700">
@@ -692,34 +758,59 @@ export default function SenseiDashboard() {
                                             )}
                                             {student.contractStartDate && (
                                                 <div className="text-xs text-blue-400 mt-1">
-                                                    Contract Start: {student.contractStartDate.split('T')[0]}
+                                                    Contract Start: {new Date(student.contractStartDate as any).toISOString().split('T')[0]}
                                                 </div>
                                             )}
                                         </td>
                                         <td className="p-4 text-gray-400">{student.email}</td>
                                         <td className="p-4">
-                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-700 text-white border border-gray-600">
-                                                {belts.find(b => b.id === student.currentBeltId)?.name} Belt
-                                            </span>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-700 text-white border border-gray-600">
+                                                    {belts.find(b => b.id === student.currentBeltId)?.name} Belt
+                                                </span>
+                                                {student.stripes ? (
+                                                    <div className="flex gap-1 ml-1">
+                                                        {[...Array(student.stripes)].map((_, i) => (
+                                                            <div key={i} className="w-1 h-3 bg-white/40 rounded-full" title={`${student.stripes} Stripes`}></div>
+                                                        ))}
+                                                    </div>
+                                                ) : null}
+                                                {student.nextTestDate && (
+                                                    <div className="text-[10px] text-amber-500 font-bold uppercase mt-1">
+                                                        Test: {new Date(student.nextTestDate as any).toISOString().split('T')[0]}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="p-4 flex gap-2 flex-col sm:flex-row">
-                                            <button
-                                                onClick={() => handleEditClick(student)}
-                                                className="text-blue-400 hover:text-blue-300 text-sm font-medium"
-                                            >
-                                                Edit
-                                            </button>
-                                            <select
-                                                value={student.currentBeltId}
-                                                onChange={(e) => handleBeltChange(student.id, e.target.value)}
-                                                className="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 block w-full p-1"
-                                            >
-                                                {belts.map((belt) => (
-                                                    <option key={belt.id} value={belt.id}>
-                                                        Promote to {belt.name}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                            <div className="flex flex-col gap-2 w-full">
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => handleEditClick(student)}
+                                                        className="text-blue-400 hover:text-blue-300 text-sm font-medium"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <span className="text-gray-600">|</span>
+                                                    <Link
+                                                        href={`/sensei/students/${student.id}`}
+                                                        className="text-amber-400 hover:text-amber-300 text-sm font-medium flex items-center gap-1"
+                                                    >
+                                                        Calendar
+                                                    </Link>
+                                                </div>
+                                                <select
+                                                    value={student.currentBeltId}
+                                                    onChange={(e) => handleBeltChange(student.id, e.target.value)}
+                                                    className="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 block w-full p-1"
+                                                >
+                                                    {belts.map((belt) => (
+                                                        <option key={belt.id} value={belt.id}>
+                                                            Promote to {belt.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -754,7 +845,7 @@ export default function SenseiDashboard() {
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
                                     </svg>
-                                    {new Date(event.date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                    {event.date ? new Date(event.date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'No date set'}
                                 </div>
                                 <p className="text-gray-300 text-sm">{event.description}</p>
                             </div>

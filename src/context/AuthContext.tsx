@@ -3,11 +3,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '@/types';
 import { useRouter } from 'next/navigation';
-import { addUserAction, fetchUserAction, loginUserAction } from '@/app/actions';
+import { addUserAction, fetchUserAction, loginUserAction, fetchLinkedStudentsAction } from '@/app/actions';
 import { useSession, signIn, signOut } from 'next-auth/react';
 
 interface AuthContextType {
     user: User | null;
+    activeProfile: User | null;
+    linkedStudents: User[];
+    switchProfile: (userId: string | null) => void;
     login: (email: string, password?: string) => Promise<boolean>;
     register: (name: string, email: string, password: string) => Promise<boolean>;
     logout: () => void;
@@ -20,41 +23,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: session, status } = useSession();
     const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
+    const [activeProfile, setActiveProfile] = useState<User | null>(null);
+    const [linkedStudents, setLinkedStudents] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const loadUserData = async () => {
-            // Simply allow the user state to potentially be derived from session if we want,
-            // or fetch additional data ONLY if needed and safe. 
-            // With the new session callback populating user.id and user.role, 
-            // we might not need to fetch the full user object immediately if we trust the session.
-            // However, to keep existing functionality (fetching full profile), we'll keep the fetch 
-            // but ensure we don't cause a loop. 
-
-            // Check if session is actually established
             if (status === 'authenticated' && session?.user?.email) {
                 try {
                     const foundUser = await loginUserAction(session.user.email);
                     if (foundUser) {
-                        setUser({
+                        const formattedUser: User = {
                             ...foundUser,
+                            id: foundUser.id,
                             name: foundUser.name || '',
                             email: foundUser.email || '',
                             role: foundUser.role as any,
-                            startDate: foundUser.startDate?.toISOString(),
-                            contractStartDate: foundUser.contractStartDate?.toISOString(),
+                            startDate: foundUser.startDate || undefined,
+                            contractStartDate: foundUser.contractStartDate || undefined,
                             contractRenewal: (foundUser.contractRenewal as any) || undefined,
                             senseiNotes: foundUser.senseiNotes || undefined,
                             address: foundUser.address || undefined,
                             signedContract: foundUser.signedContract || undefined,
                             password: foundUser.password || undefined,
-                        });
+                        };
+                        setUser(formattedUser);
+                        setActiveProfile(formattedUser);
+
+                        // Fetch linked students
+                        const students = await fetchLinkedStudentsAction(foundUser.id);
+                        setLinkedStudents(students.map((s: any) => ({
+                            ...s,
+                            id: s.id,
+                            name: s.name || '',
+                            email: s.email || '',
+                            role: s.role as any,
+                            startDate: s.startDate || undefined,
+                            contractStartDate: s.contractStartDate || undefined,
+                            nextTestDate: s.nextTestDate || undefined,
+                        })));
                     }
                 } catch (e) {
                     console.error("Failed to load user data", e);
                 }
             } else if (status === 'unauthenticated') {
                 setUser(null);
+                setActiveProfile(null);
+                setLinkedStudents([]);
             }
 
             if (status !== 'loading') {
@@ -111,8 +126,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signOut({ callbackUrl: '/login' });
     };
 
+    const switchProfile = (userId: string | null) => {
+        if (!userId || userId === user?.id) {
+            setActiveProfile(user);
+            return;
+        }
+        const linked = linkedStudents.find(s => s.id === userId);
+        if (linked) {
+            setActiveProfile(linked);
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>
+        <AuthContext.Provider value={{
+            user,
+            activeProfile,
+            linkedStudents,
+            switchProfile,
+            login,
+            register,
+            logout,
+            isLoading
+        }}>
             {children}
         </AuthContext.Provider>
     );

@@ -8,54 +8,59 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  
-  // Custom fields
-  password        String? // For credentials provider
-  role            String  @default("student") // 'student' | 'sensei'
-  currentBeltId   String  @default("white-belt") // Default belt?
-  startDate       DateTime?
+  id                String       @id @default(cuid())
+  name              String?
+  email             String?      @unique
+  emailVerified     DateTime?
+  image             String?
+  password          String?
+  role              String       @default("student")
+  currentBeltId     String       @default("white-belt")
+  startDate         DateTime?
   contractStartDate DateTime?
-  contractRenewal String? // 'monthly' | 'quarterly' | 'six_months' | 'yearly'
-  senseiNotes     String?
-  address         String?
-  signedContract  String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  attendance      Attendance[]
-  classes         Class[]
+  contractRenewal   String?
+  senseiNotes       String?
+  address           String?
+  signedContract    String?
+  stripes           Int          @default(0)
+  nextTestDate      DateTime?
+  isSwatTeam        Boolean      @default(false)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  
+  // Family Linking
+  guardians         User[]       @relation("FamilyLink")
+  students          User[]       @relation("FamilyLink")
+  
+  accounts          Account[]
+  attendance        Attendance[]
+  sessions          Session[]
+  classes           Class[]      @relation("ClassToUser")
 }
 
 model Class {
-  id        String   @id @default(cuid())
-  name      String
-  day       String   // e.g. "Monday"
-  time      String   // e.g. "18:00"
-  duration  Int      @default(60) // minutes
-  students  User[]
+  id       String   @id @default(cuid())
+  name     String
+  days     String[]
+  time     String
+  duration Int      @default(60)
+  students User[]   @relation("ClassToUser")
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -77,10 +82,10 @@ model VerificationToken {
 }
 
 model Belt {
-  id    String @id
-  name  String
-  color String
-  order Int    @unique
+  id     String  @id
+  name   String
+  color  String
+  order  Int     @unique
   videos Video[]
 }
 
@@ -100,9 +105,9 @@ model Event {
 }
 
 model Attendance {
-  id        String   @id @default(cuid())
-  date      DateTime @default(now())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  notes     String?
+  id     String   @id @default(cuid())
+  date   DateTime @default(now())
+  userId String
+  notes  String?
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
