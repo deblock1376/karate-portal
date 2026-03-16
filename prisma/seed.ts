@@ -1,7 +1,12 @@
 
 import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
+
+async function hash(pw: string) {
+    return bcrypt.hash(pw, 10)
+}
 
 async function main() {
     // BELTS
@@ -52,40 +57,107 @@ async function main() {
         })
     }
 
-    // USERS
+    // USERS — passwords hashed with bcrypt
+    const senseiPw = await hash('sensei')
+    const studentPw = await hash('student')
+    const parentPw = await hash('parent')
+
     const users = [
+        // ── Sensei ──────────────────────────────────────────────────────────────
         {
             id: 'sensei',
             name: 'Sensei Miyagi',
             email: 'sensei@dojo.com',
             role: 'sensei',
             currentBeltId: 'rokudan',
-            password: 'sensei', // Default password
+            password: senseiPw,
         },
+
+        // ── Guardian (parent of Daniel & Ali) ────────────────────────────────
+        {
+            id: 'parent1',
+            name: 'Lucille LaRusso',
+            email: 'lucille@dojo.com',
+            role: 'student',           // guardians use the student role
+            currentBeltId: '11th-kyu', // required by schema
+            password: parentPw,
+            address: '123 Dojo Way, Karate City, KC 12345',
+        },
+
+        // ── Students ─────────────────────────────────────────────────────────
         {
             id: 'student1',
             name: 'Daniel LaRusso',
             email: 'daniel@dojo.com',
             role: 'student',
-            currentBeltId: '11th-kyu',
-            startDate: new Date('2024-01-15'),
-            contractRenewal: 'six_months',
-            senseiNotes: 'Shows great promise. Needs to work on stance.',
+            currentBeltId: '3rd-kyu',
+            startDate: new Date('2023-01-15'),
+            contractRenewal: 'yearly',
+            senseiNotes: 'Shows great promise. Tournament contender. Work on breath control in kata.',
             address: '123 Dojo Way, Karate City, KC 12345',
             signedContract: 'daniel_larusso_contract.pdf',
-            password: 'student',
+            stripes: 2,
+            nextTestDate: new Date('2026-05-01'),
+            isSwatTeam: false,
+            password: studentPw,
         },
         {
             id: 'student2',
             name: 'Johnny Lawrence',
             email: 'johnny@dojo.com',
             role: 'student',
-            currentBeltId: '10th-kyu',
-            startDate: new Date('2024-12-01'),
+            currentBeltId: '5th-kyu',
+            startDate: new Date('2023-06-01'),
+            contractRenewal: 'six_months',
+            senseiNotes: 'Natural aggression — channeling it positively. Strong sparring partner.',
+            stripes: 1,
+            nextTestDate: new Date('2026-06-01'),
+            isSwatTeam: false,
+            password: studentPw,
+        },
+        {
+            id: 'student3',
+            name: 'Ali Mills',
+            email: 'ali@dojo.com',
+            role: 'student',
+            currentBeltId: '7th-kyu',
+            startDate: new Date('2024-03-10'),
             contractRenewal: 'yearly',
-            senseiNotes: 'Needs to work on discipline.',
-            password: 'student',
-        }
+            senseiNotes: 'Excellent footwork. Ready to advance.',
+            address: '456 Valley View Dr, Karate City, KC 12345',
+            stripes: 3,
+            nextTestDate: new Date('2026-04-15'),
+            isSwatTeam: true,
+            password: studentPw,
+        },
+        {
+            id: 'student4',
+            name: 'Bobby Brown',
+            email: 'bobby@dojo.com',
+            role: 'student',
+            currentBeltId: '11th-kyu',
+            startDate: new Date('2026-01-20'),
+            contractRenewal: 'monthly',
+            senseiNotes: 'Brand new. Eager to learn.',
+            stripes: 0,
+            nextTestDate: new Date('2026-04-15'),
+            isSwatTeam: false,
+            password: studentPw,
+        },
+        {
+            id: 'student5',
+            name: 'Dutch',
+            email: 'dutch@dojo.com',
+            role: 'student',
+            currentBeltId: '2nd-kyu',
+            startDate: new Date('2022-04-01'),
+            contractRenewal: 'yearly',
+            senseiNotes: 'Powerful and aggressive. Needs to work on composure under pressure.',
+            stripes: 1,
+            nextTestDate: new Date('2026-09-01'),
+            isSwatTeam: true,
+            password: studentPw,
+        },
     ]
 
     for (const user of users) {
@@ -96,20 +168,38 @@ async function main() {
                 role: user.role,
                 currentBeltId: user.currentBeltId,
                 password: user.password,
-                startDate: user.startDate,
-                contractRenewal: user.contractRenewal,
-                senseiNotes: user.senseiNotes,
-                address: user.address,
-                signedContract: user.signedContract,
+                startDate: (user as any).startDate,
+                contractRenewal: (user as any).contractRenewal,
+                senseiNotes: (user as any).senseiNotes,
+                address: (user as any).address,
+                signedContract: (user as any).signedContract,
+                stripes: (user as any).stripes ?? 0,
+                nextTestDate: (user as any).nextTestDate,
+                isSwatTeam: (user as any).isSwatTeam ?? false,
             },
-            create: user,
+            create: user as any,
         })
     }
 
+    // FAMILY LINKS — guardian ↔ student connections
+    // Lucille is the guardian of Daniel and Ali
+    await prisma.user.update({
+        where: { id: 'parent1' },
+        data: {
+            students: {
+                connect: [
+                    { id: 'student1' }, // Daniel LaRusso
+                    { id: 'student3' }, // Ali Mills
+                ],
+            },
+        },
+    })
+
     // EVENTS
     const events = [
-        { id: 'e1', title: 'Belt Promotion Testing', date: new Date('2025-12-15'), description: 'Testing for all ranks. Please arrive 30 mins early.' },
-        { id: 'e2', title: 'Holiday Dojo Party', date: new Date('2025-12-20'), description: 'Potluck party for all students and families.' },
+        { id: 'e1', title: 'Belt Promotion Testing', date: new Date('2026-04-15'), description: 'Testing for all ranks. Please arrive 30 mins early.' },
+        { id: 'e2', title: 'Spring Tournament', date: new Date('2026-05-10'), description: 'Regional tournament. Open to 7th-kyu and above.' },
+        { id: 'e3', title: 'Summer Dojo Party', date: new Date('2026-06-20'), description: 'Potluck celebration for all students and families.' },
     ]
 
     for (const event of events) {
@@ -119,6 +209,17 @@ async function main() {
             create: event,
         })
     }
+
+    console.log('Seed complete.')
+    console.log('')
+    console.log('Test accounts:')
+    console.log('  sensei@dojo.com     / sensei   (Sensei role)')
+    console.log('  daniel@dojo.com     / student  (3rd-kyu student)')
+    console.log('  johnny@dojo.com     / student  (5th-kyu student)')
+    console.log('  ali@dojo.com        / student  (7th-kyu, SWAT team)')
+    console.log('  bobby@dojo.com      / student  (11th-kyu, new student)')
+    console.log('  dutch@dojo.com      / student  (2nd-kyu, SWAT team)')
+    console.log('  lucille@dojo.com    / parent   (guardian of Daniel & Ali)')
 }
 
 main()

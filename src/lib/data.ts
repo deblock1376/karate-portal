@@ -38,8 +38,8 @@ export const USERS: User[] = [
         email: 'daniel@dojo.com',
         role: 'student',
         currentBeltId: '11th-kyu',
-        startDate: '2024-01-15',
-        contractStartDate: '2024-01-15',
+        startDate: new Date('2024-01-15'),
+        contractStartDate: new Date('2024-01-15'),
         contractRenewal: 'six_months',
         senseiNotes: 'Shows great promise. Needs to work on stance.',
         address: '123 Dojo Way, Karate City, KC 12345',
@@ -52,8 +52,8 @@ export const USERS: User[] = [
         email: 'johnny@cobra.kai',
         role: 'student',
         currentBeltId: '11th-kyu',
-        startDate: '2024-02-01',
-        contractStartDate: '2024-02-01',
+        startDate: new Date('2024-02-01'),
+        contractStartDate: new Date('2024-02-01'),
         contractRenewal: 'monthly',
         senseiNotes: 'Aggressive style. Good power.',
         address: '456 Cobra St, Valley, CA 90210',
@@ -65,8 +65,8 @@ export const USERS: User[] = [
         email: 'johnny@dojo.com',
         role: 'student',
         currentBeltId: '10th-kyu',
-        startDate: '2024-12-01',
-        contractStartDate: '2024-12-01',
+        startDate: new Date('2024-12-01'),
+        contractStartDate: new Date('2024-12-01'),
         contractRenewal: 'yearly',
         senseiNotes: 'Needs to work on discipline.',
         password: 'password123',
@@ -86,8 +86,8 @@ export const VIDEOS: Video[] = [
 ];
 
 let EVENTS: DojoEvent[] = [
-    { id: 'e1', title: 'Belt Promotion Testing', date: '2025-12-15', description: 'Testing for all ranks. Please arrive 30 mins early.' },
-    { id: 'e2', title: 'Holiday Dojo Party', date: '2025-12-20', description: 'Potluck party for all students and families.' },
+    { id: 'e1', title: 'Belt Promotion Testing', date: new Date('2025-12-15'), description: 'Testing for all ranks. Please arrive 30 mins early.' },
+    { id: 'e2', title: 'Holiday Dojo Party', date: new Date('2025-12-20'), description: 'Potluck party for all students and families.' },
 ];
 
 // Helper functions to simulate database access
@@ -113,8 +113,8 @@ export const addUser = (name: string, email: string, password?: string, startDat
         email,
         role: 'student',
         currentBeltId: '11th-kyu',
-        startDate,
-        contractStartDate,
+        startDate: startDate ? new Date(startDate) : undefined,
+        contractStartDate: contractStartDate ? new Date(contractStartDate) : undefined,
         contractRenewal,
         senseiNotes,
         address,
@@ -134,13 +134,13 @@ export const updateUser = (id: string, updates: Partial<User>) => {
     return null;
 };
 
-export const getEvents = () => EVENTS.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+export const getEvents = () => EVENTS.sort((a, b) => (a.date?.getTime() ?? 0) - (b.date?.getTime() ?? 0));
 
 export const addEvent = (title: string, date: string, description: string) => {
     const newEvent: DojoEvent = {
         id: Math.random().toString(36).substr(2, 9),
         title,
-        date,
+        date: new Date(date),
         description,
     };
     EVENTS.push(newEvent);

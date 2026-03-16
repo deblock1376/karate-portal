@@ -183,7 +183,6 @@ export default function StudentDashboard() {
                                                 }`}
                                         >
                                             {(user.stripes || 0) >= s ? '★' : s}
-                                            {(subject.stripes || 0) >= s ? '★' : s}
                                         </div>
                                     ))}
                                 </div>
