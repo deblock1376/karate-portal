@@ -74,7 +74,7 @@ export async function updateUserAction(id: string, data: any) {
         startDate: userData.startDate ? new Date(userData.startDate) : undefined,
         contractStartDate: userData.contractStartDate ? new Date(userData.contractStartDate) : undefined,
         nextTestDate: userData.nextTestDate ? new Date(userData.nextTestDate) : undefined,
-        stripes: userData.stripes ? parseInt(userData.stripes) : undefined,
+        stripes: userData.stripes !== undefined && userData.stripes !== null ? parseInt(userData.stripes) : undefined,
         isSwatTeam: typeof userData.isSwatTeam === 'boolean' ? userData.isSwatTeam : (userData.isSwatTeam === 'true'),
         password: userData.password ? await bcrypt.hash(userData.password, 10) : undefined,
         classes: classIds ? {
@@ -86,6 +86,8 @@ export async function updateUserAction(id: string, data: any) {
         data: formattedData,
     })
     revalidatePath('/sensei')
+    revalidatePath('/sensei/students')
+    revalidatePath(`/sensei/students/${id}`)
     return user
 }
 
