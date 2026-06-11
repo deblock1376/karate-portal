@@ -100,7 +100,7 @@ export default function StudentDashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white p-4 md:p-8">
+        <div className="min-h-screen text-white p-4 md:p-8">
             <header className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                 <div>
                     <div className="flex items-center gap-3">
@@ -162,10 +162,10 @@ export default function StudentDashboard() {
                         <h2 className="text-xl font-semibold mb-4 text-white flex items-center gap-2">
                             <span>📊</span> Your Progress
                         </h2>
-                        <div className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 space-y-6">
+                        <div className="glass-card p-6 rounded-2xl space-y-6">
                             <ProgressBar currentBelt={currentBelt} allBelts={allBelts} />
 
-                            <div className="pt-4 border-t border-gray-700">
+                            <div className="pt-4 border-t border-white/[0.08]">
                                 <div className="flex justify-between items-end mb-4">
                                     <div>
                                         <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">Stripe Progress</h3>
@@ -257,12 +257,12 @@ export default function StudentDashboard() {
                         <h2 className="text-xl font-semibold mb-6">My Class Schedule</h2>
                         <div className="space-y-4">
                             {myClasses.length === 0 && (
-                                <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 text-center text-gray-500">
+                                <div className="glass-panel p-6 rounded-xl text-center text-gray-500">
                                     No assigned classes.
                                 </div>
                             )}
                             {myClasses.map((cls) => (
-                                <div key={cls.id} className="bg-gray-800 p-4 rounded-lg border border-gray-700 shadow-md flex justify-between items-center group hover:border-blue-500 transition-colors">
+                                <div key={cls.id} className="glass-card p-4 rounded-xl flex justify-between items-center group hover:border-blue-500/30 transition-colors">
                                     <div>
                                         <h3 className="font-bold text-white group-hover:text-blue-400 transition-colors">{cls.name}</h3>
                                         <div className="text-sm text-gray-400 mt-1 flex items-center gap-2">
@@ -284,7 +284,7 @@ export default function StudentDashboard() {
                         <h2 className="text-xl font-semibold mb-6">Upcoming Events</h2>
                         <div className="space-y-4">
                             {events.map((event) => (
-                                <div key={event.id} className="bg-gray-800 p-4 rounded-lg border border-gray-700 shadow-md hover:border-purple-500 transition-colors">
+                                <div key={event.id} className="glass-card p-4 rounded-xl hover:border-purple-500/30 transition-colors">
                                     <div className="flex items-center gap-2 mb-2">
                                         <span className="w-2 h-2 rounded-full bg-purple-500"></span>
                                         <h3 className="font-bold text-lg text-white">{event.title}</h3>
@@ -296,7 +296,7 @@ export default function StudentDashboard() {
                                 </div>
                             ))}
                             {events.length === 0 && (
-                                <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 text-center text-gray-500">
+                                <div className="glass-panel p-6 rounded-xl text-center text-gray-500">
                                     No upcoming events.
                                 </div>
                             )}

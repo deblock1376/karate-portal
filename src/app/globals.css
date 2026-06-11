@@ -1,14 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0f172a;
-  /* Slate 900 */
+  --background: #0a0f1e;
   --foreground: #f8fafc;
-  /* Slate 50 */
   --accent-gold: #fbbf24;
-  /* Amber 400 */
   --accent-gold-dark: #d97706;
-  /* Amber 600 */
 }
 
 @theme {
@@ -18,13 +14,38 @@
 
 body {
   color: var(--foreground);
-  background: radial-gradient(circle at top right, #1e293b, var(--background));
+  background: var(--background);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   min-height: 100vh;
 }
 
+/* Layered animated background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(168, 85, 247, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 60% at 50% 0%, rgba(251, 191, 36, 0.04) 0%, transparent 40%),
+    linear-gradient(180deg, #0f172a 0%, #0a0f1e 100%);
+}
+
 @utility glass-panel {
-  @apply bg-slate-800/50 backdrop-blur-md border border-slate-700/50;
+  @apply bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] shadow-lg shadow-black/10;
+}
+
+@utility glass-card {
+  @apply bg-white/[0.06] backdrop-blur-xl border border-white/[0.1] shadow-xl shadow-black/20;
+}
+
+@utility glass-input {
+  @apply bg-white/[0.05] backdrop-blur-sm border border-white/[0.1] text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/30 transition-all;
+}
+
+@utility glass-button {
+  @apply bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] hover:border-white/[0.2] text-slate-300 hover:text-white transition-all;
 }
 
 @utility gold-gradient-text {
@@ -37,16 +58,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: rgba(255, 255, 255, 0.15);
 }
 
 /* Custom scrollbar for specific components */
@@ -59,10 +80,10 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: rgba(255, 255, 255, 0.15);
 }

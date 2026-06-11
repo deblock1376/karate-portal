@@ -40,11 +40,11 @@ export default function ClassesManagementPage() {
     }, [currentUser, authLoading, router, loadData]);
 
     if (isLoading || authLoading) {
-        return <div className="min-h-screen flex items-center justify-center text-white bg-gray-900">Loading...</div>;
+        return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>;
     }
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white p-8">
+        <div className="min-h-screen text-white p-8">
             <header className="mb-8 flex justify-between items-center">
                 <div>
                     <div className="flex items-center gap-4 mb-2">

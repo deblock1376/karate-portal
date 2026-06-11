@@ -79,12 +79,12 @@ export default function StudentDetailView({ params }: { params: Promise<{ id: st
     }, [currentUser, authLoading, router, loadData]);
 
     if (isLoading || authLoading) {
-        return <div className="min-h-screen flex items-center justify-center text-white bg-gray-900">Loading...</div>;
+        return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>;
     }
 
     if (!student) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center text-white bg-gray-900 gap-4">
+            <div className="min-h-screen flex flex-col items-center justify-center text-white gap-4">
                 <h1 className="text-2xl font-bold">Student not found</h1>
                 <Link href="/sensei" className="text-blue-400 hover:underline">Back to Dashboard</Link>
             </div>
@@ -92,7 +92,7 @@ export default function StudentDetailView({ params }: { params: Promise<{ id: st
     }
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white p-8">
+        <div className="min-h-screen text-white p-8">
             <header className="mb-8 flex justify-between items-center">
                 <div>
                     <div className="flex items-center gap-4 mb-2">

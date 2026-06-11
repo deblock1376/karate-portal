@@ -141,13 +141,13 @@ export default function ClassManager({ classes, allStudents, onRefresh }: ClassM
     );
 
     return (
-        <div className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
+        <div className="glass-card p-6 rounded-2xl">
             <h2 className="text-xl font-semibold mb-6 flex items-center gap-2 text-white">
                 <span>🗓️</span> Class Schedule
             </h2>
 
             {/* Create/Edit Form */}
-            <form onSubmit={handleSubmit} className={`mb-8 grid grid-cols-1 md:grid-cols-6 gap-4 items-end p-4 rounded-lg transition-colors ${editingClassId ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-gray-700/50'}`}>
+            <form onSubmit={handleSubmit} className={`mb-8 grid grid-cols-1 md:grid-cols-6 gap-4 items-end p-4 rounded-lg transition-colors ${editingClassId ? 'bg-amber-500/5 border border-amber-500/20' : 'bg-white/[0.04]'}`}>
                 <div className="md:col-span-2">
                     <label className="block text-xs uppercase text-gray-400 font-bold mb-1">Class Name</label>
                     <input
@@ -155,7 +155,7 @@ export default function ClassManager({ classes, allStudents, onRefresh }: ClassM
                         value={name}
                         onChange={e => setName(e.target.value)}
                         placeholder="e.g. Beginners"
-                        className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white focus:ring-2 focus:ring-blue-500 transition-all outline-none"
+                        className="w-full glass-input rounded-lg p-2"
                         required
                     />
                 </div>
@@ -175,7 +175,7 @@ export default function ClassManager({ classes, allStudents, onRefresh }: ClassM
                                 }}
                                 className={`px-2 py-1 rounded text-[10px] font-bold transition-all border ${selectedDays.includes(d)
                                     ? 'bg-blue-600 border-blue-500 text-white'
-                                    : 'bg-gray-800 border-gray-700 text-gray-500 hover:border-gray-600'
+                                    : 'bg-white/[0.04] border-white/[0.08] text-gray-500 hover:border-white/[0.15]'
                                     }`}
                             >
                                 {d.substring(0, 3)}
@@ -189,7 +189,7 @@ export default function ClassManager({ classes, allStudents, onRefresh }: ClassM
                         type="time"
                         value={time}
                         onChange={e => setTime(e.target.value)}
-                        className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full glass-input rounded-lg p-2"
                         required
                     />
                 </div>
@@ -199,7 +199,7 @@ export default function ClassManager({ classes, allStudents, onRefresh }: ClassM
                         type="time"
                         value={endTime}
                         onChange={e => setEndTime(e.target.value)}
-                        className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full glass-input rounded-lg p-2"
                         required
                     />
                 </div>
@@ -234,7 +234,7 @@ export default function ClassManager({ classes, allStudents, onRefresh }: ClassM
                             key={cls.id}
                             className={`flex flex-col md:flex-row md:items-center justify-between p-4 rounded-lg border transition-all cursor-pointer ${selectedClassId === cls.id
                                 ? 'bg-blue-600/10 border-blue-500/50 ring-1 ring-blue-500/50'
-                                : 'bg-gray-700 border-gray-600 hover:border-gray-500 group'
+                                : 'bg-white/[0.06] border-white/[0.08] hover:border-white/[0.15] group'
                                 }`}
                             onClick={() => {
                                 setSelectedClassId(cls.id === selectedClassId ? null : cls.id);
@@ -307,7 +307,7 @@ export default function ClassManager({ classes, allStudents, onRefresh }: ClassM
                 </div>
 
                 {/* Class Roster / Attendance View */}
-                <div className="bg-gray-900/50 rounded-lg border border-gray-700 p-4 min-h-[400px]">
+                <div className="glass-panel rounded-2xl p-4 min-h-[400px]">
                     {selectedClass ? (
                         <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                             <div className="flex items-center justify-between mb-4">
@@ -339,7 +339,7 @@ export default function ClassManager({ classes, allStudents, onRefresh }: ClassM
                                             placeholder="Search students to add..."
                                             value={searchRoster}
                                             onChange={e => setSearchRoster(e.target.value)}
-                                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:ring-2 focus:ring-yellow-500 outline-none"
+                                            className="w-full glass-input rounded-lg px-4 py-2 text-sm"
                                         />
                                         <svg className="w-4 h-4 absolute right-3 top-2.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                                     </div>
@@ -348,7 +348,7 @@ export default function ClassManager({ classes, allStudents, onRefresh }: ClassM
                                         {filteredStudents.map(student => {
                                             const isInClass = selectedClass.students.some((s: any) => s.id === student.id);
                                             return (
-                                                <div key={student.id} className="flex items-center justify-between bg-gray-800/50 p-3 rounded border border-gray-700/50">
+                                                <div key={student.id} className="flex items-center justify-between bg-white/[0.04] p-3 rounded-xl border border-white/[0.06]">
                                                     <div>
                                                         <p className="text-sm font-bold text-white leading-none mb-1">{student.name}</p>
                                                         <p className="text-[10px] text-gray-500">{student.email}</p>
@@ -390,7 +390,7 @@ export default function ClassManager({ classes, allStudents, onRefresh }: ClassM
                                             <p className="text-gray-500 text-center py-8 italic">No students assigned to this class.</p>
                                         ) : (
                                             selectedClass.students.map((student: any) => (
-                                                <div key={student.id} className="flex items-center justify-between bg-gray-800 p-3 rounded border border-gray-700 group hover:border-gray-500 transition-all">
+                                                <div key={student.id} className="flex items-center justify-between bg-white/[0.04] p-3 rounded-xl border border-white/[0.08] group hover:border-white/[0.15] transition-all">
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-300 font-bold text-xs uppercase">
                                                             {student.name.charAt(0)}

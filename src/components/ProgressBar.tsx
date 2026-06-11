@@ -11,7 +11,7 @@ export default function ProgressBar({ currentBelt, allBelts }: ProgressBarProps)
     const progress = ((currentIndex + 1) / allBelts.length) * 100;
 
     return (
-        <div className="w-full bg-gray-700 rounded-full h-4 mb-6 relative overflow-hidden">
+        <div className="w-full bg-white/[0.06] rounded-full h-4 mb-6 relative overflow-hidden">
             <div
                 className="bg-yellow-500 h-4 rounded-full transition-all duration-500 ease-out"
                 style={{ width: `${progress}%` }}

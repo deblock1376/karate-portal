@@ -70,12 +70,12 @@ export default function ClassDetailView({ params }: { params: Promise<{ id: stri
     const isToday = selectedDate === todayStr();
 
     if (authLoading) {
-        return <div className="min-h-screen flex items-center justify-center text-white bg-gray-900">Loading...</div>;
+        return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>;
     }
 
     if (!isLoading && !cls) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center text-white bg-gray-900 gap-4">
+            <div className="min-h-screen flex flex-col items-center justify-center text-white gap-4">
                 <h1 className="text-2xl font-bold">Class not found</h1>
                 <Link href="/sensei" className="text-blue-400 hover:underline">Back to Dashboard</Link>
             </div>
@@ -86,7 +86,7 @@ export default function ClassDetailView({ params }: { params: Promise<{ id: stri
     const totalCount = cls?.students?.length ?? 0;
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white p-8">
+        <div className="min-h-screen text-white p-8">
             <header className="mb-8">
                 <div className="flex items-center gap-4 mb-2">
                     <Link href="/sensei" className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400">
@@ -140,7 +140,7 @@ export default function ClassDetailView({ params }: { params: Promise<{ id: stri
                                 value={selectedDate}
                                 max={todayStr()}
                                 onChange={handleDateChange}
-                                className="bg-gray-800 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+                                className="glass-input rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
                             />
                             {!isToday && (
                                 <button
@@ -172,7 +172,7 @@ export default function ClassDetailView({ params }: { params: Promise<{ id: stri
                     )}
 
                     {/* Table */}
-                    <div className="overflow-hidden rounded-xl border border-white/5 bg-gray-800/50">
+                    <div className="overflow-hidden rounded-xl border border-white/5 bg-white/[0.04]">
                         {isLoading ? (
                             <div className="p-8 text-center text-gray-500">Loading attendance...</div>
                         ) : (

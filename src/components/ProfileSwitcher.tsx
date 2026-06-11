@@ -15,16 +15,16 @@ export default function ProfileSwitcher() {
     if (linkedStudents.length === 0) return null;
 
     return (
-        <div className="flex items-center space-x-2 bg-gray-900/50 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10 shadow-lg">
+        <div className="flex items-center space-x-2 bg-white/[0.06] backdrop-blur-xl px-3 py-1.5 rounded-full border border-white/[0.1] shadow-lg">
             <span className="text-gray-400 text-xs font-medium uppercase tracking-wider">Profile:</span>
             <select
                 value={activeProfile?.id || user.id}
                 onChange={(e) => switchProfile(e.target.value)}
                 className="bg-transparent text-white text-sm font-semibold focus:outline-none cursor-pointer hover:text-blue-400 transition-colors"
             >
-                <option value={user.id} className="bg-gray-900">{user.name} (Me)</option>
+                <option value={user.id} className="bg-slate-900">{user.name} (Me)</option>
                 {linkedStudents.map((student) => (
-                    <option key={student.id} value={student.id} className="bg-gray-900">
+                    <option key={student.id} value={student.id} className="bg-slate-900">
                         {student.name}
                     </option>
                 ))}

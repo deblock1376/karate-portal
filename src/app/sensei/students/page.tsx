@@ -66,10 +66,10 @@ export default function StudentRoster() {
         }
     }, [currentUser, authLoading, router, loadData]);
 
-    if (authLoading) return <div className="min-h-screen flex items-center justify-center text-white bg-gray-900">Authenticating...</div>;
+    if (authLoading) return <div className="min-h-screen flex items-center justify-center text-white">Authenticating...</div>;
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white p-4 md:p-8">
+        <div className="min-h-screen text-white p-4 md:p-8">
             {showImport && (
                 <CsvImportModal
                     onClose={() => setShowImport(false)}
@@ -95,13 +95,13 @@ export default function StudentRoster() {
                             placeholder="Search students..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full md:w-64 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                            className="w-full md:w-64 glass-input rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
                         />
                     </div>
                     <select
                         value={filterBelt}
                         onChange={(e) => setFilterBelt(e.target.value)}
-                        className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                        className="glass-input rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
                     >
                         <option value="all">All Belts</option>
                         {belts.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
@@ -109,7 +109,7 @@ export default function StudentRoster() {
                     <select
                         value={filterSwat}
                         onChange={(e) => setFilterSwat(e.target.value)}
-                        className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                        className="glass-input rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
                     >
                         <option value="all">All Students</option>
                         <option value="swat">SWAT Team</option>
@@ -127,17 +127,17 @@ export default function StudentRoster() {
                 </div>
             </header>
 
-            <div className="bg-gray-800 rounded-2xl overflow-hidden border border-gray-700 shadow-xl">
+            <div className="glass-card rounded-2xl overflow-hidden">
                 <table className="w-full text-left">
                     <thead>
-                        <tr className="bg-gray-750/50 border-b border-gray-700">
+                        <tr className="bg-white/[0.04] border-b border-white/[0.06]">
                             <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500">Student</th>
                             <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500">Rank & Progress</th>
                             <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500">Specialty</th>
                             <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-700">
+                    <tbody className="divide-y divide-white/[0.06]">
                         {isLoading && students.length === 0 ? (
                             <tr><td colSpan={4} className="p-12 text-center text-gray-500 italic">Finding practitioners...</td></tr>
                         ) : students.length === 0 ? (
@@ -147,7 +147,7 @@ export default function StudentRoster() {
                                 <tr key={student.id} className="hover:bg-white/[0.02] transition-colors group">
                                     <td className="p-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center text-xl shadow-inner font-bold text-gray-300">
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-white/[0.1] to-white/[0.06] flex items-center justify-center text-xl shadow-inner font-bold text-gray-300">
                                                 {student.name.charAt(0)}
                                             </div>
                                             <div>
@@ -159,7 +159,7 @@ export default function StudentRoster() {
                                     <td className="p-4">
                                         <div className="flex flex-col gap-1.5">
                                             <div className="flex items-center gap-2">
-                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gray-900 border border-gray-700 text-gray-300">
+                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/[0.06] border border-white/[0.08] text-gray-300">
                                                     {belts.find(b => b.id === student.currentBeltId)?.name}
                                                 </span>
                                                 {student.stripes ? (

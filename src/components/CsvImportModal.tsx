@@ -166,7 +166,7 @@ export default function CsvImportModal({ onClose, onImported }: Props) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-            <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div className="bg-slate-900/90 backdrop-blur-2xl border border-white/[0.1] rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
 
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-white/10 shrink-0">
@@ -205,7 +205,7 @@ export default function CsvImportModal({ onClose, onImported }: Props) {
                             </div>
                             {parseError && <p className="text-red-400 text-sm">{parseError}</p>}
 
-                            <div className="bg-gray-800/60 rounded-xl p-4 border border-white/5">
+                            <div className="bg-white/[0.04] rounded-xl p-4 border border-white/5">
                                 <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Expected columns</p>
                                 <div className="flex flex-wrap gap-2">
                                     {['name', 'email', 'password', 'belt', 'stripes', 'start date', 'address', 'swat'].map(col => (
@@ -225,7 +225,7 @@ export default function CsvImportModal({ onClose, onImported }: Props) {
                     {step === 'preview' && (
                         <div className="space-y-5">
                             {/* Column mapping status */}
-                            <div className="bg-gray-800/60 rounded-xl p-4 border border-white/5">
+                            <div className="bg-white/[0.04] rounded-xl p-4 border border-white/5">
                                 <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Column Mapping</p>
                                 <div className="space-y-1.5">
                                     {headers.map(h => (
@@ -310,7 +310,7 @@ export default function CsvImportModal({ onClose, onImported }: Props) {
                                     <div className="text-4xl font-bold text-green-400">{result.imported}</div>
                                     <div className="text-sm text-gray-400 mt-1">Students imported</div>
                                 </div>
-                                <div className="flex-1 bg-gray-800/60 border border-white/5 rounded-xl p-6 text-center">
+                                <div className="flex-1 bg-white/[0.04] border border-white/5 rounded-xl p-6 text-center">
                                     <div className="text-4xl font-bold text-gray-400">{result.skipped}</div>
                                     <div className="text-sm text-gray-400 mt-1">Skipped (duplicate or invalid)</div>
                                 </div>

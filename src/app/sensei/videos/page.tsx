@@ -86,11 +86,11 @@ export default function SenseiVideoManagement() {
     };
 
     if (isLoading || authLoading) {
-        return <div className="min-h-screen flex items-center justify-center text-white bg-gray-900">Loading Video Manager...</div>;
+        return <div className="min-h-screen flex items-center justify-center text-white">Loading Video Manager...</div>;
     }
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white p-8">
+        <div className="min-h-screen text-white p-8">
             <header className="mb-8">
                 <div className="flex items-center gap-4 mb-2">
                     <Link href="/sensei" className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400">
@@ -116,7 +116,7 @@ export default function SenseiVideoManagement() {
                                     value={title}
                                     onChange={e => setTitle(e.target.value)}
                                     placeholder="e.g. Basic Front Kick"
-                                    className="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-yellow-500 outline-none"
+                                    className="w-full glass-input rounded-lg p-3 text-white focus:ring-2 focus:ring-yellow-500 outline-none"
                                     required
                                 />
                             </div>
@@ -127,7 +127,7 @@ export default function SenseiVideoManagement() {
                                     value={url}
                                     onChange={e => setUrl(e.target.value)}
                                     placeholder="https://www.youtube.com/watch?v=..."
-                                    className="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-yellow-500 outline-none"
+                                    className="w-full glass-input rounded-lg p-3 text-white focus:ring-2 focus:ring-yellow-500 outline-none"
                                     required
                                 />
                             </div>
@@ -136,7 +136,7 @@ export default function SenseiVideoManagement() {
                                 <select
                                     value={selectedBeltId}
                                     onChange={e => setSelectedBeltId(e.target.value)}
-                                    className="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-yellow-500 outline-none"
+                                    className="w-full glass-input rounded-lg p-3 text-white focus:ring-2 focus:ring-yellow-500 outline-none"
                                     required
                                 >
                                     {belts.map(belt => (
@@ -176,7 +176,7 @@ export default function SenseiVideoManagement() {
                                 ) : (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         {beltVideos.map(video => (
-                                            <div key={video.id} className="bg-gray-800/50 border border-white/5 rounded-xl overflow-hidden group">
+                                            <div key={video.id} className="bg-white/[0.04] border border-white/[0.08] rounded-xl overflow-hidden group">
                                                 <div className="aspect-video bg-black relative">
                                                     <iframe
                                                         className="absolute inset-0 w-full h-full"

@@ -264,7 +264,7 @@ export default function SenseiDashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white p-8">
+        <div className="min-h-screen text-white p-8">
             <header className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-yellow-500">Sensei Dashboard</h1>
@@ -355,7 +355,7 @@ export default function SenseiDashboard() {
 
             {/* Renewal Alert Section */}
             {upcomingRenewals.length > 0 && (
-                <section className="mb-8 bg-red-900/20 border border-red-500/30 p-6 rounded-lg shadow-lg">
+                <section className="mb-8 glass-card p-6 rounded-2xl border-red-500/20">
                     <h2 className="text-xl font-semibold mb-4 text-red-400 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -364,7 +364,7 @@ export default function SenseiDashboard() {
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {upcomingRenewals.map(student => (
-                            <div key={student.id} className="bg-gray-800 p-4 rounded-lg border border-gray-700 flex justify-between items-center">
+                            <div key={student.id} className="glass-card p-4 rounded-xl flex justify-between items-center">
                                 <div>
                                     <div className="font-bold text-white">{student.name}</div>
                                     <div className="text-sm text-gray-400">{student.email}</div>
@@ -382,7 +382,7 @@ export default function SenseiDashboard() {
             )}
 
             {/* Search and Filters */}
-            <section className="mb-8 bg-gray-800 p-4 rounded-lg shadow border border-gray-700">
+            <section className="mb-8 glass-card p-4 rounded-xl">
                 <div className="flex flex-col md:flex-row gap-4 items-center">
                     <div className="flex-1 w-full">
                         <label className="text-xs text-gray-400 uppercase font-bold mb-1 block">Search Students</label>
@@ -391,7 +391,7 @@ export default function SenseiDashboard() {
                             placeholder="Search by name or email..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+                            className="w-full bg-white/[0.06] border border-white/[0.1] rounded-lg p-2 text-white focus:ring-2 focus:ring-amber-500/50 focus:outline-none transition-all"
                         />
                     </div>
                     <div className="w-full md:w-64">
@@ -399,7 +399,7 @@ export default function SenseiDashboard() {
                         <select
                             value={filterBelt}
                             onChange={(e) => setFilterBelt(e.target.value)}
-                            className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+                            className="w-full bg-white/[0.06] border border-white/[0.1] rounded-lg p-2 text-white focus:ring-2 focus:ring-amber-500/50 focus:outline-none transition-all"
                         >
                             <option value="all">All Belts</option>
                             {belts.map(belt => (
@@ -412,7 +412,7 @@ export default function SenseiDashboard() {
 
             {/* ... Forms (Belt, Event, Student) ... */}
             {showBeltForm && (
-                <section className="mb-8 bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
+                <section className="mb-8 glass-card p-6 rounded-2xl">
                     <h2 className="text-xl font-semibold mb-4 text-white">Manage Belts</h2>
 
                     <div className="mb-8">
@@ -424,7 +424,7 @@ export default function SenseiDashboard() {
                                     type="text"
                                     value={beltName}
                                     onChange={(e) => setBeltName(e.target.value)}
-                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-3 py-2 bg-white/[0.06] border border-white/[0.1] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
                                     placeholder="e.g. Green"
                                     required
                                 />
@@ -442,7 +442,7 @@ export default function SenseiDashboard() {
                                         type="text"
                                         value={beltColor}
                                         onChange={(e) => setBeltColor(e.target.value)}
-                                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-3 py-2 bg-white/[0.06] border border-white/[0.1] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
                                         required
                                     />
                                 </div>
@@ -453,7 +453,7 @@ export default function SenseiDashboard() {
                                     type="number"
                                     value={beltOrder}
                                     onChange={(e) => setBeltOrder(Number(e.target.value))}
-                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-3 py-2 bg-white/[0.06] border border-white/[0.1] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
                                     required
                                 />
                             </div>
@@ -470,7 +470,7 @@ export default function SenseiDashboard() {
                         <h3 className="text-lg font-medium text-gray-300 mb-4">Existing Belts</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             {belts.map((belt) => (
-                                <div key={belt.id} className="flex items-center justify-between p-3 bg-gray-700 rounded-lg border border-gray-600">
+                                <div key={belt.id} className="flex items-center justify-between p-3 bg-white/[0.06] border border-white/[0.08] rounded-lg">
                                     <div className="flex items-center gap-3">
                                         <div
                                             className="w-6 h-6 rounded-full border border-gray-500"
@@ -497,7 +497,7 @@ export default function SenseiDashboard() {
 
 
             {showEventForm && (
-                <section className="mb-8 bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
+                <section className="mb-8 glass-card p-6 rounded-2xl">
                     <h2 className="text-xl font-semibold mb-4 text-white">Add New Event</h2>
                     <form onSubmit={handleAddEvent} className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -507,7 +507,7 @@ export default function SenseiDashboard() {
                                     type="text"
                                     value={eventTitle}
                                     onChange={(e) => setEventTitle(e.target.value)}
-                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    className="w-full px-3 py-2 bg-white/[0.06] border border-white/[0.1] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
                                     required
                                 />
                             </div>
@@ -517,7 +517,7 @@ export default function SenseiDashboard() {
                                     type="date"
                                     value={eventDate}
                                     onChange={(e) => setEventDate(e.target.value)}
-                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    className="w-full px-3 py-2 bg-white/[0.06] border border-white/[0.1] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
                                     required
                                 />
                             </div>
@@ -527,7 +527,7 @@ export default function SenseiDashboard() {
                             <textarea
                                 value={eventDescription}
                                 onChange={(e) => setEventDescription(e.target.value)}
-                                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-white/[0.06] border border-white/[0.1] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
                                 rows={3}
                                 required
                             ></textarea>
@@ -545,7 +545,7 @@ export default function SenseiDashboard() {
             )}
 
             {showForm && (
-                <section className="mb-8 bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
+                <section className="mb-8 glass-card p-6 rounded-2xl">
                     <h2 className="text-xl font-semibold mb-4 text-white">
                         {editingId ? 'Edit Student' : 'Add New Student'}
                     </h2>
@@ -557,7 +557,7 @@ export default function SenseiDashboard() {
                                     type="text"
                                     value={studentName}
                                     onChange={(e) => setStudentName(e.target.value)}
-                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                    className="w-full px-3 py-2 bg-white/[0.06] border border-white/[0.1] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
                                     required
                                 />
                             </div>
@@ -567,7 +567,7 @@ export default function SenseiDashboard() {
                                     type="email"
                                     value={studentEmail}
                                     onChange={(e) => setStudentEmail(e.target.value)}
-                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                    className="w-full px-3 py-2 bg-white/[0.06] border border-white/[0.1] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
                                     required
                                 />
                             </div>
@@ -577,7 +577,7 @@ export default function SenseiDashboard() {
                                     type="date"
                                     value={startDate}
                                     onChange={(e) => setStartDate(e.target.value)}
-                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                    className="w-full px-3 py-2 bg-white/[0.06] border border-white/[0.1] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
                                 />
                             </div>
                             <div>
@@ -586,7 +586,7 @@ export default function SenseiDashboard() {
                                     type="date"
                                     value={contractStartDate}
                                     onChange={(e) => setContractStartDate(e.target.value)}
-                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                    className="w-full px-3 py-2 bg-white/[0.06] border border-white/[0.1] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
                                 />
                             </div>
                             <div>
@@ -594,7 +594,7 @@ export default function SenseiDashboard() {
                                 <select
                                     value={contract}
                                     onChange={(e) => setContract(e.target.value as ContractType)}
-                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                    className="w-full px-3 py-2 bg-white/[0.06] border border-white/[0.1] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
                                 >
                                     <option value="monthly">Monthly</option>
                                     <option value="quarterly">Quarterly</option>
@@ -608,7 +608,7 @@ export default function SenseiDashboard() {
                                     type="text"
                                     value={address}
                                     onChange={(e) => setAddress(e.target.value)}
-                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                    className="w-full px-3 py-2 bg-white/[0.06] border border-white/[0.1] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
                                     placeholder="123 Dojo Way, Karate City"
                                 />
                             </div>
@@ -617,7 +617,7 @@ export default function SenseiDashboard() {
                                 <select
                                     value={stripes}
                                     onChange={(e) => setStripes(parseInt(e.target.value))}
-                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                    className="w-full px-3 py-2 bg-white/[0.06] border border-white/[0.1] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
                                 >
                                     {[0, 1, 2, 3, 4].map(s => (
                                         <option key={s} value={s}>{s} Stripes</option>
@@ -630,7 +630,7 @@ export default function SenseiDashboard() {
                                     type="date"
                                     value={nextTestDate}
                                     onChange={(e) => setNextTestDate(e.target.value)}
-                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                    className="w-full px-3 py-2 bg-white/[0.06] border border-white/[0.1] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
                                 />
                             </div>
                             <div className="md:col-span-2">
@@ -664,10 +664,10 @@ export default function SenseiDashboard() {
 
                             <div className="md:col-span-2">
                                 <label className="block text-sm font-medium text-gray-300 mb-2">Assign to Classes</label>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-48 overflow-y-auto bg-gray-700 p-3 rounded-lg border border-gray-600">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-48 overflow-y-auto bg-white/[0.06] p-3 rounded-lg border border-white/[0.08]">
                                     {classes.length === 0 && <p className="text-gray-400 text-sm italic">No classes available.</p>}
                                     {classes.map((cls: any) => (
-                                        <label key={cls.id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-600/50 p-1 rounded">
+                                        <label key={cls.id} className="flex items-center space-x-2 cursor-pointer hover:bg-white/[0.06] p-1 rounded">
                                             <input
                                                 type="checkbox"
                                                 checked={selectedClassIds.includes(cls.id)}
@@ -678,7 +678,7 @@ export default function SenseiDashboard() {
                                                         setSelectedClassIds(selectedClassIds.filter(id => id !== cls.id));
                                                     }
                                                 }}
-                                                className="rounded border-gray-500 text-blue-600 focus:ring-blue-500 bg-gray-600"
+                                                className="rounded border-white/20 text-amber-600 focus:ring-amber-500/50 bg-white/[0.06]"
                                             />
                                             <span className="text-sm text-gray-200">{cls.name} ({cls.days?.join(', ')} {cls.time})</span>
                                         </label>
@@ -691,7 +691,7 @@ export default function SenseiDashboard() {
                             <textarea
                                 value={notes}
                                 onChange={(e) => setNotes(e.target.value)}
-                                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                className="w-full px-3 py-2 bg-white/[0.06] border border-white/[0.1] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
                                 rows={3}
                             ></textarea>
                         </div>
@@ -721,15 +721,15 @@ export default function SenseiDashboard() {
                                 });
                                 downloadCSV(csv, 'dojo-roster.csv');
                             }}
-                            className="text-xs font-bold uppercase tracking-widest bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white px-3 py-1.5 rounded transition-all flex items-center gap-2"
+                            className="text-xs font-bold uppercase tracking-widest bg-white/[0.06] hover:bg-white/[0.1] text-gray-300 hover:text-white px-3 py-1.5 rounded transition-all flex items-center gap-2"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                             Export CSV
                         </button>
                     </div>
-                    <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg">
+                    <div className="glass-card rounded-2xl overflow-hidden">
                         <table className="w-full text-left">
-                            <thead className="bg-gray-700">
+                            <thead className="bg-white/[0.06]">
                                 <tr>
                                     <th className="p-4 text-sm font-medium text-gray-300">Name</th>
                                     <th className="p-4 text-sm font-medium text-gray-300">Email</th>
@@ -737,9 +737,9 @@ export default function SenseiDashboard() {
                                     <th className="p-4 text-sm font-medium text-gray-300">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-700">
+                            <tbody className="divide-y divide-white/[0.06]">
                                 {students.map((student) => (
-                                    <tr key={student.id} className="hover:bg-gray-750">
+                                    <tr key={student.id} className="hover:bg-white/[0.03]">
                                         <td className="p-4 font-medium">
                                             <div>{student.name}</div>
                                             {student.address && (
@@ -765,7 +765,7 @@ export default function SenseiDashboard() {
                                         <td className="p-4 text-gray-400">{student.email}</td>
                                         <td className="p-4">
                                             <div className="flex flex-col gap-1">
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-700 text-white border border-gray-600">
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white/[0.06] text-white border border-white/[0.08]">
                                                     {belts.find(b => b.id === student.currentBeltId)?.name} Belt
                                                 </span>
                                                 {student.stripes ? (
@@ -802,7 +802,7 @@ export default function SenseiDashboard() {
                                                 <select
                                                     value={student.currentBeltId}
                                                     onChange={(e) => handleBeltChange(student.id, e.target.value)}
-                                                    className="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 block w-full p-1"
+                                                    className="bg-white/[0.06] border border-white/[0.1] text-white text-sm rounded-lg focus:ring-amber-500/50 focus:border-amber-500/50 block w-full p-1 transition-all"
                                                 >
                                                     {belts.map((belt) => (
                                                         <option key={belt.id} value={belt.id}>
@@ -828,7 +828,7 @@ export default function SenseiDashboard() {
                     <h2 className="text-xl font-semibold mb-6">Upcoming Events</h2>
                     <div className="space-y-4">
                         {events.map((event) => (
-                            <div key={event.id} className="bg-gray-800 p-4 rounded-lg border border-gray-700 shadow-md">
+                            <div key={event.id} className="glass-card p-4 rounded-xl shadow-md">
                                 <div className="flex justify-between items-start mb-2">
                                     <h3 className="font-bold text-lg text-purple-400">{event.title}</h3>
                                     <button
@@ -851,7 +851,7 @@ export default function SenseiDashboard() {
                             </div>
                         ))}
                         {events.length === 0 && (
-                            <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 text-center text-gray-500">
+                            <div className="glass-card p-6 rounded-2xl text-center text-gray-500">
                                 No upcoming events.
                             </div>
                         )}

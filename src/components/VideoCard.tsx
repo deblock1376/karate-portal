@@ -8,7 +8,7 @@ interface VideoCardProps {
 
 export default function VideoCard({ video, locked }: VideoCardProps) {
     return (
-        <div className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg transition-transform hover:scale-105 ${locked ? 'opacity-50 grayscale' : ''}`}>
+        <div className={`bg-white/[0.06] backdrop-blur-xl rounded-2xl overflow-hidden shadow-lg border border-white/[0.08] transition-transform hover:scale-105 ${locked ? 'opacity-50 grayscale' : ''}`}>
             <div className="relative pb-[56.25%] bg-black">
                 {locked ? (
                     <div className="absolute inset-0 flex items-center justify-center">
