@@ -25,6 +25,15 @@ model User {
   stripes           Int          @default(0)
   nextTestDate      DateTime?
   isSwatTeam        Boolean      @default(false)
+  phone             String?
+  birthday          DateTime?
+  school            String?
+  guardianName      String?
+  guardianPhone     String?
+  guardianEmail     String?
+  secondaryName     String?
+  secondaryPhone    String?
+  secondaryEmail    String?
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
   

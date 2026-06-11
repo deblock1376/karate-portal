@@ -9,6 +9,7 @@ import ProgressBar from '@/components/ProgressBar';
 import VideoCard from '@/components/VideoCard';
 import CalendarView from '@/components/CalendarView';
 import ProfileSwitcher from '@/components/ProfileSwitcher';
+import EditProfileModal from '@/components/EditProfileModal';
 
 interface VideoWithBelt extends Video {
     beltOrder: number;
@@ -28,6 +29,7 @@ export default function StudentDashboard() {
     const [isCheckedIn, setIsCheckedIn] = useState(false);
     const [isCheckingIn, setIsCheckingIn] = useState(false);
     const [myClasses, setMyClasses] = useState<any[]>([]);
+    const [showEditProfile, setShowEditProfile] = useState(false);
 
     const loadData = useCallback(async () => {
         if (!subject) return;
@@ -101,6 +103,7 @@ export default function StudentDashboard() {
 
     return (
         <div className="min-h-screen text-white p-4 md:p-8">
+            {showEditProfile && <EditProfileModal onClose={() => setShowEditProfile(false)} />}
             <header className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                 <div>
                     <div className="flex items-center gap-3">
@@ -148,12 +151,23 @@ export default function StudentDashboard() {
                         </div>
                     </div>
                 </div>
-                <button
-                    onClick={logout}
-                    className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-sm font-medium transition-colors"
-                >
-                    Sign Out
-                </button>
+                <div className="flex gap-3">
+                    <button
+                        onClick={() => setShowEditProfile(true)}
+                        className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded text-sm font-medium transition-colors flex items-center gap-2"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        Edit Profile
+                    </button>
+                    <button
+                        onClick={logout}
+                        className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-sm font-medium transition-colors"
+                    >
+                        Sign Out
+                    </button>
+                </div>
             </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

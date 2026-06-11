@@ -144,6 +144,66 @@ export async function fetchUserByIdAction(id: string) {
     });
 }
 
+export async function updateStudentContactAction(data: {
+    name?: string
+    email?: string
+    phone?: string
+    address?: string
+    birthday?: string
+    school?: string
+    guardianName?: string
+    guardianPhone?: string
+    guardianEmail?: string
+    secondaryName?: string
+    secondaryPhone?: string
+    secondaryEmail?: string
+}) {
+    const session = await auth()
+    if (!session?.user?.id) throw new Error('Unauthorized')
+
+    await prisma.user.update({
+        where: { id: session.user.id },
+        data: {
+            name: data.name || undefined,
+            email: data.email || undefined,
+            phone: data.phone ?? undefined,
+            address: data.address ?? undefined,
+            birthday: data.birthday ? new Date(data.birthday) : undefined,
+            school: data.school ?? undefined,
+            guardianName: data.guardianName ?? undefined,
+            guardianPhone: data.guardianPhone ?? undefined,
+            guardianEmail: data.guardianEmail ?? undefined,
+            secondaryName: data.secondaryName ?? undefined,
+            secondaryPhone: data.secondaryPhone ?? undefined,
+            secondaryEmail: data.secondaryEmail ?? undefined,
+        },
+    })
+    revalidatePath('/student')
+}
+
+export async function fetchStudentContactAction() {
+    const session = await auth()
+    if (!session?.user?.id) throw new Error('Unauthorized')
+
+    return await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: {
+            name: true,
+            email: true,
+            phone: true,
+            address: true,
+            birthday: true,
+            school: true,
+            guardianName: true,
+            guardianPhone: true,
+            guardianEmail: true,
+            secondaryName: true,
+            secondaryPhone: true,
+            secondaryEmail: true,
+        },
+    })
+}
+
 export async function importStudentsFromCsvAction(rows: {
     name: string;
     email: string;

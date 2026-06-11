@@ -1,4 +1,4 @@
-export { loginUserAction, fetchUserAction, fetchAllUsersAction, addUserAction, updateUserAction, updateUserBeltAction, linkStudentAction, fetchLinkedStudentsAction, fetchUserByIdAction, importStudentsFromCsvAction } from './actions/users'
+export { loginUserAction, fetchUserAction, fetchAllUsersAction, addUserAction, updateUserAction, updateUserBeltAction, linkStudentAction, fetchLinkedStudentsAction, fetchUserByIdAction, importStudentsFromCsvAction, updateStudentContactAction, fetchStudentContactAction } from './actions/users'
 export { fetchBeltsAction, addBeltAction, deleteBeltAction } from './actions/belts'
 export { fetchEventsAction, addEventAction, deleteEventAction } from './actions/events'
 export { fetchVideosByBeltAction, addVideoAction, deleteVideoAction, updateVideoAction } from './actions/videos'
