@@ -4,7 +4,10 @@ import prisma from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 
 export async function fetchEventsAction() {
+    const startOfToday = new Date()
+    startOfToday.setHours(0, 0, 0, 0)
     return await prisma.event.findMany({
+        where: { date: { gte: startOfToday } },
         orderBy: { date: 'asc' }
     })
 }
