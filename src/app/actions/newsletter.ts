@@ -6,9 +6,6 @@ import { Resend } from 'resend'
 import { NewsletterEmail } from '@/components/emails/NewsletterEmail'
 import * as React from 'react'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-const FROM = process.env.RESEND_FROM_EMAIL || 'Zanshin Karate Dojo <onboarding@resend.dev>'
-
 export async function fetchNewsletterRecipientsAction() {
     const session = await auth()
     if (session?.user?.role !== 'sensei') throw new Error('Unauthorized')
@@ -23,6 +20,9 @@ export async function fetchNewsletterRecipientsAction() {
 export async function sendNewsletterAction(subject: string, body: string) {
     const session = await auth()
     if (session?.user?.role !== 'sensei') throw new Error('Unauthorized')
+
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    const FROM = process.env.RESEND_FROM_EMAIL || 'Zanshin Karate Dojo <onboarding@resend.dev>'
 
     if (!subject.trim() || !body.trim()) throw new Error('Subject and body are required')
 
