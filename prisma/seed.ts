@@ -80,7 +80,7 @@ async function main() {
 
     // ── Sensei ──────────────────────────────────────────────────────────────
     await prisma.user.upsert({
-        where: { email: 'sensei@dojo.com' },
+        where: { id: 'sensei' },
         update: {},
         create: {
             id: 'sensei',
@@ -94,7 +94,7 @@ async function main() {
 
     // ── Guardians ───────────────────────────────────────────────────────────
     await prisma.user.upsert({
-        where: { email: 'maria.santos@email.com' },
+        where: { id: 'parent1' },
         update: {},
         create: {
             id: 'parent1',
@@ -108,7 +108,7 @@ async function main() {
     })
 
     await prisma.user.upsert({
-        where: { email: 'kevin.nguyen@email.com' },
+        where: { id: 'parent2' },
         update: {},
         create: {
             id: 'parent2',
@@ -130,7 +130,7 @@ async function main() {
             email: 'mia.chen@email.com',
             currentBeltId: '11th-kyu',
             startDate: new Date('2026-03-01'),
-            contractStartDate: new Date('2026-03-01'),
+            contractStartDate: new Date('2026-05-18'),
             contractRenewal: 'monthly',
             senseiNotes: 'Brand new, age 8. Very enthusiastic. Mom watches from the lobby.',
             address: '215 Birch Ln, Portland, OR 97209',
@@ -145,7 +145,7 @@ async function main() {
             email: 'jayden.brooks@email.com',
             currentBeltId: '11th-kyu',
             startDate: new Date('2026-02-10'),
-            contractStartDate: new Date('2026-02-10'),
+            contractStartDate: new Date('2026-03-15'),
             contractRenewal: 'quarterly',
             senseiNotes: 'Age 10. Transferred from a TKD school. Adjusting to new stances.',
             address: '88 Cedar Ct, Portland, OR 97211',
@@ -165,7 +165,7 @@ async function main() {
             senseiNotes: 'Age 9. Quiet but precise. Nailing her kata early.',
             address: '742 Maple St, Portland, OR 97205',
             stripes: 2,
-            nextTestDate: new Date('2026-06-01'),
+            nextTestDate: new Date('2026-06-15'),
             isSwatTeam: false,
             classIds: ['class-beginners'],
         },
@@ -175,12 +175,12 @@ async function main() {
             email: 'liam.obrien@email.com',
             currentBeltId: '10th-kyu',
             startDate: new Date('2025-11-01'),
-            contractStartDate: new Date('2025-11-01'),
+            contractStartDate: new Date('2026-05-22'),
             contractRenewal: 'monthly',
             senseiNotes: 'Age 11. Comes with his older brother Marcus. Competitive but respectful.',
             address: '330 Division St, Portland, OR 97202',
             stripes: 1,
-            nextTestDate: new Date('2026-06-01'),
+            nextTestDate: new Date('2026-06-15'),
             isSwatTeam: false,
             classIds: ['class-beginners'],
         },
@@ -197,7 +197,7 @@ async function main() {
             senseiNotes: 'Age 12. Natural athlete — also runs track. Great kicks.',
             address: '1702 Hawthorne Blvd, Portland, OR 97214',
             stripes: 2,
-            nextTestDate: new Date('2026-06-01'),
+            nextTestDate: new Date('2026-06-20'),
             isSwatTeam: false,
             classIds: ['class-intermediate'],
         },
@@ -212,7 +212,7 @@ async function main() {
             senseiNotes: 'Age 14. Liam\'s older brother. Quietly dedicated, never misses class.',
             address: '330 Division St, Portland, OR 97202',
             stripes: 3,
-            nextTestDate: new Date('2026-06-01'),
+            nextTestDate: new Date('2026-06-20'),
             isSwatTeam: false,
             classIds: ['class-intermediate'],
         },
@@ -224,12 +224,12 @@ async function main() {
             email: 'emma.nguyen@email.com',
             currentBeltId: '7th-kyu',
             startDate: new Date('2024-08-15'),
-            contractStartDate: new Date('2024-08-15'),
+            contractStartDate: new Date('2025-06-25'),
             contractRenewal: 'yearly',
             senseiNotes: 'Age 13. SWAT candidate. Excellent focus and self-discipline.',
             address: '1580 Oak Ave, Portland, OR 97214',
             stripes: 2,
-            nextTestDate: new Date('2026-06-01'),
+            nextTestDate: new Date('2026-06-21'),
             isSwatTeam: true,
             classIds: ['class-intermediate', 'class-swat'],
         },
@@ -259,7 +259,7 @@ async function main() {
             senseiNotes: 'Age 14. Tournament competitor — placed 2nd at regionals in 2025. Smooth kata.',
             address: '912 NE Alberta St, Portland, OR 97211',
             stripes: 3,
-            nextTestDate: new Date('2026-06-01'),
+            nextTestDate: new Date('2026-06-21'),
             isSwatTeam: true,
             classIds: ['class-intermediate', 'class-swat'],
         },
@@ -276,7 +276,7 @@ async function main() {
             senseiNotes: 'Age 16. Assistant instructor potential. Helps with beginners on Wednesdays.',
             address: '2250 NW Glisan St, Portland, OR 97210',
             stripes: 2,
-            nextTestDate: new Date('2026-06-01'),
+            nextTestDate: new Date('2026-06-28'),
             isSwatTeam: true,
             classIds: ['class-advanced', 'class-swat'],
         },
@@ -307,7 +307,7 @@ async function main() {
             address: '1133 SW Jefferson St, Portland, OR 97201',
             signedContract: 'noah_kim_contract.pdf',
             stripes: 2,
-            nextTestDate: new Date('2026-06-01'),
+            nextTestDate: new Date('2026-06-28'),
             isSwatTeam: true,
             classIds: ['class-advanced', 'class-swat'],
         },
@@ -419,7 +419,7 @@ async function main() {
     for (const student of students) {
         const { classIds, ...userData } = student
         await prisma.user.upsert({
-            where: { email: userData.email },
+            where: { id: userData.id },
             update: {
                 name: userData.name,
                 currentBeltId: userData.currentBeltId,
@@ -498,29 +498,29 @@ async function main() {
     // (not truly deterministic, but good enough for dev data)
     const attendanceRecords: { userId: string, dates: Date[] }[] = [
         // Active students — recent attendance
-        { userId: 'student1',  dates: attendanceDates('2026-03-03', '2026-05-14', 2) },    // Mia - new, 2x/week
-        { userId: 'student2',  dates: attendanceDates('2026-02-11', '2026-05-14', 2) },    // Jayden
-        { userId: 'student3',  dates: attendanceDates('2025-09-17', '2026-05-14', 2) },    // Sofia
-        { userId: 'student4',  dates: attendanceDates('2025-11-03', '2026-05-14', 2) },    // Liam
-        { userId: 'student5',  dates: attendanceDates('2025-05-21', '2026-05-14', 3) },    // Aisha - 3x/week
-        { userId: 'student6',  dates: attendanceDates('2025-01-13', '2026-05-14', 3) },    // Marcus
-        { userId: 'student7',  dates: attendanceDates('2024-08-19', '2026-05-14', 3) },    // Emma
-        { userId: 'student8',  dates: attendanceDates('2024-06-03', '2026-05-14', 2) },    // Tyler
-        { userId: 'student9',  dates: attendanceDates('2024-03-11', '2026-05-14', 3) },    // Isabella
-        { userId: 'student10', dates: attendanceDates('2023-09-04', '2026-05-14', 3) },    // Ethan
-        { userId: 'student11', dates: attendanceDates('2023-06-19', '2026-05-14', 3) },    // Olivia
-        { userId: 'student12', dates: attendanceDates('2023-01-16', '2026-05-14', 3) },    // Noah
-        { userId: 'student13', dates: attendanceDates('2022-08-01', '2026-05-14', 3) },    // Ava
-        { userId: 'student14', dates: attendanceDates('2022-01-10', '2026-05-14', 3) },    // Daniel K
-        { userId: 'student15', dates: attendanceDates('2021-06-01', '2026-05-14', 2) },    // Ryan
+        { userId: 'student1',  dates: attendanceDates('2026-03-03', '2026-06-09', 2) },    // Mia - new, 2x/week
+        { userId: 'student2',  dates: attendanceDates('2026-02-11', '2026-06-09', 2) },    // Jayden
+        { userId: 'student3',  dates: attendanceDates('2025-09-17', '2026-06-09', 2) },    // Sofia
+        { userId: 'student4',  dates: attendanceDates('2025-11-03', '2026-06-09', 2) },    // Liam
+        { userId: 'student5',  dates: attendanceDates('2025-05-21', '2026-06-09', 3) },    // Aisha - 3x/week
+        { userId: 'student6',  dates: attendanceDates('2025-01-13', '2026-06-09', 3) },    // Marcus
+        { userId: 'student7',  dates: attendanceDates('2024-08-19', '2026-06-09', 3) },    // Emma
+        { userId: 'student8',  dates: attendanceDates('2024-06-03', '2026-06-09', 2) },    // Tyler
+        { userId: 'student9',  dates: attendanceDates('2024-03-11', '2026-06-09', 3) },    // Isabella
+        { userId: 'student10', dates: attendanceDates('2023-09-04', '2026-06-09', 3) },    // Ethan
+        { userId: 'student11', dates: attendanceDates('2023-06-19', '2026-06-09', 3) },    // Olivia
+        { userId: 'student12', dates: attendanceDates('2023-01-16', '2026-06-09', 3) },    // Noah
+        { userId: 'student13', dates: attendanceDates('2022-08-01', '2026-06-09', 3) },    // Ava
+        { userId: 'student14', dates: attendanceDates('2022-01-10', '2026-06-09', 3) },    // Daniel K
+        { userId: 'student15', dates: attendanceDates('2021-06-01', '2026-06-09', 2) },    // Ryan
         // Grace — lapsed, last attended in February
         { userId: 'student16', dates: attendanceDates('2024-01-15', '2026-02-15', 2) },    // Grace - stopped
-        { userId: 'student17', dates: attendanceDates('2025-08-04', '2026-05-14', 2) },    // James
-        { userId: 'student18', dates: attendanceDates('2026-04-16', '2026-05-14', 2) },    // Zoe - very new
+        { userId: 'student17', dates: attendanceDates('2025-08-04', '2026-06-09', 2) },    // James
+        { userId: 'student18', dates: attendanceDates('2026-04-16', '2026-06-09', 2) },    // Zoe - very new
     ]
 
     // Limit attendance to last ~6 months to keep the DB size reasonable
-    const sixMonthsAgo = new Date('2025-11-15')
+    const sixMonthsAgo = new Date('2025-12-10')
 
     for (const record of attendanceRecords) {
         const recentDates = record.dates.filter(d => d >= sixMonthsAgo)
@@ -540,7 +540,7 @@ async function main() {
 
     // EVENTS
     const events = [
-        { id: 'e1', title: 'Belt Promotion Testing', date: new Date('2026-06-01'), description: 'Testing for all ranks. Please arrive 30 mins early.' },
+        { id: 'e1', title: 'Belt Promotion Testing', date: new Date('2026-06-28'), description: 'Testing for all ranks. Please arrive 30 mins early.' },
         { id: 'e2', title: 'Summer Tournament', date: new Date('2026-07-12'), description: 'Regional tournament at Portland Convention Center. Open to 7th-kyu and above.' },
         { id: 'e3', title: 'Summer Dojo Party', date: new Date('2026-08-16'), description: 'Annual BBQ and potluck for all students and families. Laurelhurst Park shelter B.' },
     ]

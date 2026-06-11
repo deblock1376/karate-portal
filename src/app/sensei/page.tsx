@@ -19,7 +19,6 @@ import {
     fetchClassesAction
 } from '@/app/actions';
 import { User, Belt, ContractType, DojoEvent } from '@/types';
-import AttendanceCheckIn from '@/components/AttendanceCheckIn';
 import ClassManager from '@/components/ClassManager';
 import CalendarView from '@/components/CalendarView'; // Assuming CalendarView is a separate component
 
@@ -256,8 +255,22 @@ export default function SenseiDashboard() {
             const daysUntil = getDaysUntilRenewal(renewalDate);
             return { ...s, renewalDate, daysUntil };
         })
-        .filter(s => s.daysUntil <= 30 && s.daysUntil >= 0) // Show renewals within 30 days
+        .filter(s => s.daysUntil <= 30 && s.daysUntil >= 0)
         .sort((a, b) => a.daysUntil - b.daysUntil);
+
+    const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+    const todaysClasses = classes
+        .filter((c: any) => c.days?.includes(todayName))
+        .sort((a: any, b: any) => a.time.localeCompare(b.time));
+
+    const now2 = new Date();
+    const testsThisMonth = students
+        .filter(s => {
+            if (!s.nextTestDate) return false;
+            const d = new Date(s.nextTestDate as any);
+            return d.getMonth() === now2.getMonth() && d.getFullYear() === now2.getFullYear();
+        })
+        .sort((a, b) => new Date(a.nextTestDate as any).getTime() - new Date(b.nextTestDate as any).getTime());
 
     if (isLoading || !user) {
         return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>;
@@ -340,44 +353,108 @@ export default function SenseiDashboard() {
                 </div>
             </header>
 
+            {/* Today at a Glance */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                {/* Today's Classes */}
+                <section className="glass-card p-6 rounded-2xl">
+                    <h2 className="text-base font-semibold text-yellow-400 mb-4 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Today's Classes
+                        <span className="ml-auto text-xs text-gray-400 font-normal">{todayName}</span>
+                    </h2>
+                    {todaysClasses.length === 0 ? (
+                        <p className="text-gray-500 text-sm">No classes scheduled today.</p>
+                    ) : (
+                        <div className="space-y-3">
+                            {todaysClasses.map((cls: any) => (
+                                <Link key={cls.id} href={`/sensei/classes/${cls.id}`} className="flex items-center justify-between bg-white/[0.04] hover:bg-white/[0.08] rounded-xl px-4 py-3 transition-colors group">
+                                    <div>
+                                        <div className="font-medium text-white group-hover:text-yellow-400 transition-colors">{cls.name}</div>
+                                        <div className="text-xs text-gray-400">{cls.time} &middot; {cls.duration} min</div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-yellow-400 font-bold text-lg">{cls.students?.length ?? 0}</div>
+                                        <div className="text-xs text-gray-500">students</div>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+                </section>
+
+                {/* Upcoming Renewals */}
+                <section className="glass-card p-6 rounded-2xl">
+                    <h2 className="text-base font-semibold text-red-400 mb-4 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Upcoming Renewals
+                    </h2>
+                    {upcomingRenewals.length === 0 ? (
+                        <p className="text-gray-500 text-sm">No renewals in the next 30 days.</p>
+                    ) : (
+                        <div className="space-y-2">
+                            {upcomingRenewals.map(student => (
+                                <div key={student.id} className="flex items-center justify-between bg-white/[0.04] rounded-xl px-4 py-3">
+                                    <div>
+                                        <div className="font-medium text-white">{student.name}</div>
+                                        <div className="text-xs text-gray-400">{student.renewalDate.toLocaleDateString()}</div>
+                                    </div>
+                                    <div className={`text-sm font-bold ${student.daysUntil <= 7 ? 'text-red-400' : 'text-orange-400'}`}>
+                                        {student.daysUntil}d
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </section>
+
+                {/* Belt Tests This Month */}
+                <section className="glass-card p-6 rounded-2xl">
+                    <h2 className="text-base font-semibold text-amber-400 mb-4 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                        </svg>
+                        Belt Tests This Month
+                    </h2>
+                    {testsThisMonth.length === 0 ? (
+                        <p className="text-gray-500 text-sm">No belt tests scheduled this month.</p>
+                    ) : (
+                        <div className="space-y-2">
+                            {testsThisMonth.map(student => {
+                                const belt = belts.find(b => b.id === student.currentBeltId);
+                                return (
+                                    <div key={student.id} className="flex items-center justify-between bg-white/[0.04] rounded-xl px-4 py-3">
+                                        <div>
+                                            <div className="font-medium text-white">{student.name}</div>
+                                            <div className="text-xs text-gray-400 flex items-center gap-1.5 mt-0.5">
+                                                {belt && (
+                                                    <span
+                                                        className="inline-block w-2 h-2 rounded-full"
+                                                        style={{ backgroundColor: belt.color }}
+                                                    />
+                                                )}
+                                                {belt?.name} Belt
+                                            </div>
+                                        </div>
+                                        <div className="text-xs text-amber-400 font-bold">
+                                            {new Date(student.nextTestDate as any).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </section>
+            </div>
+
             {/* Class Manager Section */}
             {showClassManager && (
                 <section className="mb-8">
                     <h2 className="text-xl font-semibold mb-6">Class Management</h2>
                     <ClassManager classes={classes} allStudents={students} onRefresh={loadData} />
-                </section>
-            )}
-
-            {/* Attendance Check In */}
-            <section className="mb-8">
-                <AttendanceCheckIn students={students} />
-            </section>
-
-            {/* Renewal Alert Section */}
-            {upcomingRenewals.length > 0 && (
-                <section className="mb-8 glass-card p-6 rounded-2xl border-red-500/20">
-                    <h2 className="text-xl font-semibold mb-4 text-red-400 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Approaching Contract Renewals
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {upcomingRenewals.map(student => (
-                            <div key={student.id} className="glass-card p-4 rounded-xl flex justify-between items-center">
-                                <div>
-                                    <div className="font-bold text-white">{student.name}</div>
-                                    <div className="text-sm text-gray-400">{student.email}</div>
-                                </div>
-                                <div className="text-right">
-                                    <div className="text-red-400 font-bold">{student.daysUntil} days</div>
-                                    <div className="text-xs text-gray-500">
-                                        Due: {student.renewalDate.toLocaleDateString()}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
                 </section>
             )}
 
