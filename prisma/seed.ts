@@ -422,6 +422,8 @@ async function main() {
             where: { id: userData.id },
             update: {
                 name: userData.name,
+                email: userData.email,
+                password: studentPw,
                 currentBeltId: userData.currentBeltId,
                 startDate: userData.startDate,
                 contractStartDate: userData.contractStartDate,
