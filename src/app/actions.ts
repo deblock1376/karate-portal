@@ -5,3 +5,4 @@ export { fetchVideosByBeltAction, addVideoAction, deleteVideoAction, updateVideo
 export { markAttendanceAction, checkTodayAttendanceAction, fetchUserAttendanceStatsAction, fetchRecentAttendanceAction, fetchUserAttendanceHistoryAction, markAttendanceForDateAction, removeAttendanceForDateAction } from './actions/attendance'
 export { fetchClassesAction, createClassAction, deleteClassAction, updateClassAction, assignStudentToClassAction, removeStudentFromClassAction, fetchStudentClassesAction, fetchClassByIdAction, fetchClassByIdForDateAction } from './actions/classes'
 export { fetchDojoAnalyticsAction } from './actions/analytics'
+export { fetchNewsletterRecipientsAction, sendNewsletterAction } from './actions/newsletter'

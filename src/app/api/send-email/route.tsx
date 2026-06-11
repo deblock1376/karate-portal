@@ -22,7 +22,7 @@ export async function POST(request: Request) {
         }
 
         const { data: emailData, error } = await resend.emails.send({
-            from: 'Karate Portal <onboarding@resend.dev>', // Default Resend testing domain
+            from: process.env.RESEND_FROM_EMAIL || 'Zanshin Karate Dojo <onboarding@resend.dev>',
             to: [to],
             subject: subject,
             react: emailComponent,

@@ -14,7 +14,7 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({ name }) => (
             You can log in to your student portal to track your progress, view your current rank, and access training videos.
         </p>
         <p>
-            <a href="http://localhost:3000/login" style={{ display: 'inline-block', padding: '10px 20px', backgroundColor: '#d97706', color: '#fff', textDecoration: 'none', borderRadius: '5px' }}>
+            <a href="https://karate-portal.vercel.app/login" style={{ display: 'inline-block', padding: '10px 20px', backgroundColor: '#d97706', color: '#fff', textDecoration: 'none', borderRadius: '5px' }}>
                 Login to Portal
             </a>
         </p>
